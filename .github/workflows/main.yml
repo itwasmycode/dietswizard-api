@@ -57,8 +57,6 @@ jobs:
         rm -rf terraform_temp
 
 
-    - name: Terraform Init
-      run: terraform init
 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -66,6 +64,9 @@ jobs:
       run : cd terraform
     - name : List files
       run : ls -la
+    - name: Terraform Init
+      working-directory: terraform
+      run: terraform init
 
     - name: Terraform Apply
       working-directory: terraform
