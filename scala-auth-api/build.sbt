@@ -10,7 +10,8 @@ lazy val root = (project in file("."))
     name := "scala-auth-api",
     libraryDependencies ++= Seq(
       lambdaRuntimeInterfaceClient,
-      scalaTest % Test
+      scalaTest % Test,
+      playJson
     )
   ).settings(
     assembly / assemblyOutputPath := file("target/function.jar")
