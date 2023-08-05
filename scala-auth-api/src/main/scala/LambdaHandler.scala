@@ -1,5 +1,8 @@
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 
+import io.circe.Json
+import io.circe.parser._
+
 import java.util.{ Map => JavaMap }
 import scala.collection.JavaConverters._
 
@@ -41,9 +44,9 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
     }
 
     val responseMap: Map[String, JsValue] = Map(
-      "status" -> JsString(status),
-      "access_token" -> JsString(accessToken),
-      "refresh_token" -> JsString(refreshToken)
+      "status" -> "",
+      "access_token" -> "",
+      "refresh_token" -> ""
     )
 
     val jsonResponse: String = Json.stringify(Json.toJson(responseMap))
