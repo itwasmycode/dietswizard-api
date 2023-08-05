@@ -11,8 +11,7 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       lambdaRuntimeInterfaceClient,
       scalaTest % Test,
-      playJson,
-      Json
+      playJson
     )
   ).settings(
     assembly / assemblyOutputPath := file("target/function.jar")

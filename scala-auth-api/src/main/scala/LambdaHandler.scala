@@ -1,7 +1,6 @@
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 
-import io.circe.Json
-import io.circe.parser._
+import play.api.libs.json._
 
 import java.util.{ Map => JavaMap }
 import scala.collection.JavaConverters._
