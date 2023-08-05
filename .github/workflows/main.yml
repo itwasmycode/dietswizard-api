@@ -60,7 +60,5 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    - name: Change directory to Terraform folder
-      run: cd terraform
     - name: Terraform Apply
       run: terraform apply -auto-approve -var-file=variables.tfvars
