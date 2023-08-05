@@ -25,7 +25,7 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
     // Replace with your desired issuer
     val jwtAudience = immutableScalaMap.getOrElse("origin","dietswizard")
 
-    def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): String = {
+    def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): scala.collection.immutable.Map[String,String] = {
       val now = new Date()
       val jwtId = java.util.UUID.randomUUID().toString
       val expirationTime = DateUtils.toSecondsSinceEpoch(Instant.now().plusSeconds(3600))
