@@ -12,8 +12,7 @@ lazy val root = (project in file("."))
       lambdaRuntimeInterfaceClient,
       scalaTest % Test,
       playJson,
-      jwt,
-      xmlBind
+      jwt
     )
   ).settings(
     assembly / assemblyOutputPath := file("target/function.jar")
