@@ -52,9 +52,11 @@ jobs:
     - name: Clean up
       run: |
         rm -rf terraform_temp
+    - name: Change directory to Terraform folder
+      run: cd terraform
 
     - name: Terraform Init
       run: terraform init
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve -var-file=/terraform/variables.tfvars
+      run: terraform apply -auto-approve -var-file=variables.tfvars
