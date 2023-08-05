@@ -44,7 +44,7 @@ jobs:
         
     - name: Verify the downloaded file integrity
       run: |
-        echo "6f2e1ac76af9d10b6e5cf9d4513cfdb1f574865b8725c442220272e08e6d5bb1 terraform_1.0.9_linux_amd64.zip" | sha256sum --check
+        echo "c27a5f8e0d764b8d02c8d3cb0887b8bc8d44666c1a000a0fe36bde6fda0e9c7b  terraform_1.0.9_linux_amd64.zip" | sha256sum --check
         
     - name: Unzip Terraform
       run: |
