@@ -23,12 +23,8 @@ lazy val root = (project in file("."))
       "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.15.2"
     ),
     assemblyMergeStrategy in assembly := {
-      case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-      case x => MergeStrategy.first
-    },
-    // Exclude Java 9 module-info.class files
-    assemblyMergeStrategy in assembly := {
-      case PathList("META-INF", "versions", "9", xs @ _*) => MergeStrategy.discard
+      case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+      case PathList("META-INF", xs@_*) => MergeStrategy.discard
       case x => MergeStrategy.first
     }
   ).settings(
