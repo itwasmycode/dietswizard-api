@@ -101,7 +101,7 @@ resource "aws_db_instance" "postgresql" {
 # Create an RDS subnet group
 resource "aws_db_subnet_group" "example" {
   name       = "example-db-subnet-group"
-  subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_1.id]
+  subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
 }
 
 # Create a Lambda function
