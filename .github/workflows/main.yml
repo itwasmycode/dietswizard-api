@@ -38,10 +38,17 @@ jobs:
         cd ${{ matrix.project }}
         docker build -t $ECR_REGISTRY/${{ matrix.project }}:${{ github.sha }} .
         docker push $ECR_REGISTRY/${{ matrix.project }}:${{ github.sha }}
-      # Add the Terraform steps here (assuming you have Terraform installed)
-    - name: Set up Terraform
+
+    - name: Download Terraform
       run: |
         curl -LO "https://releases.hashicorp.com/terraform/1.0.9/terraform_1.0.9_linux_amd64.zip"
+        
+    - name: Verify the downloaded file integrity
+      run: |
+        echo "6f2e1ac76af9d10b6e5cf9d4513cfdb1f574865b8725c442220272e08e6d5bb1 terraform_1.0.9_linux_amd64.zip" | sha256sum --check
+        
+    - name: Unzip Terraform
+      run: |
         unzip terraform_1.0.9_linux_amd64.zip
         chmod +x terraform
         sudo mv terraform /usr/local/bin/
