@@ -59,6 +59,8 @@ jobs:
 
     - name: Terraform Init
       run: terraform init
+    - name: Directory change
+      run: cd terraform
 
     - name: Terraform show
       run : ls
