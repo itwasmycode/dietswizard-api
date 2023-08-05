@@ -126,9 +126,15 @@ resource "aws_lambda_function" "example_lambda" {
   # Add any other necessary Lambda function settings
 }
 
+# Create a random string to ensure a unique IAM role name
+resource "random_string" "random_suffix" {
+  length  = 8
+  special = false
+}
+
 # Create an IAM role for the Lambda function
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda-apisubnetgroup"  # Change this name to a unique value
+  name = "lambda-apisubnetgroup-${random_string.random_suffix.result}"  # Change this name to a unique value
 
   # Attach necessary policies for the Lambda function
   assume_role_policy = jsonencode({
