@@ -93,7 +93,7 @@ resource "aws_db_instance" "postgresql" {
   allocated_storage      = 20
   publicly_accessible    = false  # Keep the RDS instance private within the VPC
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  subnet_group_name      = aws_db_subnet_group.example.name
+  db_subnet_group_name      = aws_db_subnet_group.example.name
 
   # Add any other necessary RDS settings
 }
