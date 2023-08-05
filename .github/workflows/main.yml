@@ -64,6 +64,9 @@ jobs:
       uses: actions/checkout@v2
     - name : Change directory
       run : cd terraform
+    - name : List files
+      run : ls -la
 
     - name: Terraform Apply
+      working-directory: terraform
       run: terraform apply -auto-approve -var-file=variables.tfvars
