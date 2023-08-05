@@ -21,7 +21,11 @@ lazy val root = (project in file("."))
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.15.2",
       "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % "2.15.2",
       "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.15.2"
-    )
+    ),
+    assemblyMergeStrategy in assembly := {
+      case PathList("META-INF", "versions", "9", xs@_*) => MergeStrategy.discard
+      case x => MergeStrategy.first
+    }
   ).settings(
     assembly / assemblyOutputPath := file("target/function.jar")
   )
