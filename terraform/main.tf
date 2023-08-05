@@ -4,20 +4,20 @@ provider "aws" {
 
 # Create a new VPC
 resource "aws_vpc" "test_vpc" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block          = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 
 # Create two subnets in different Availability Zones
 resource "aws_subnet" "test_subnet_1" {
-  vpc_id = aws_vpc.test_vpc.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id            = aws_vpc.test_vpc.id
+  cidr_block        = "10.0.1.0/24"
   availability_zone = "eu-central-1a"
 }
 
 resource "aws_subnet" "test_subnet_2" {
-  vpc_id = aws_vpc.test_vpc.id
-  cidr_block = "10.0.2.0/24"
+  vpc_id            = aws_vpc.test_vpc.id
+  cidr_block        = "10.0.2.0/24"
   availability_zone = "eu-central-1b"
 }
 
@@ -67,9 +67,9 @@ resource "aws_security_group" "rds_sg" {
 
   # Allow inbound traffic from application or bastion hosts
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
     security_groups = [aws_security_group.application_sg.id]
   }
 
@@ -84,7 +84,7 @@ resource "aws_security_group" "rds_sg" {
 
 # Create an RDS subnet group
 resource "aws_db_subnet_group" "example" {
-  name       = "example-db-subnet-group"
+  name       = "posgresubnetgroup"  # Change this name to a unique value
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
 }
 
@@ -106,12 +106,12 @@ resource "aws_db_instance" "postgresql" {
 
 # Create a Lambda function
 resource "aws_lambda_function" "example_lambda" {
-  function_name    = "example-lambda"
-  role             = aws_iam_role.lambda_role.arn
-  package_type     = "Image"
-  image_uri        = var.image_uri  # Replace with your ECR image URI
-  memory_size      = 1024  # Set the memory size for the Lambda function
-  timeout          = 10   # Set the timeout in seconds for the Lambda function
+  function_name = "example-lambda"
+  role          = aws_iam_role.lambda_role.arn
+  package_type  = "Image"
+  image_uri     = var.image_uri  # Replace with your ECR image URI
+  memory_size   = 1024           # Set the memory size for the Lambda function
+  timeout       = 10             # Set the timeout in seconds for the Lambda function
 
   vpc_config {
     subnet_ids         = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
@@ -123,15 +123,15 @@ resource "aws_lambda_function" "example_lambda" {
 
 # Create an IAM role for the Lambda function
 resource "aws_iam_role" "lambda_role" {
-  name = "example-lambda-role"
+  name = "lambda-apisubnetgroup"  # Change this name to a unique value
 
   # Attach necessary policies for the Lambda function
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
         Principal = {
           Service = "lambda.amazonaws.com"
         }
