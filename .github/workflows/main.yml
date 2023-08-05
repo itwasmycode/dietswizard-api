@@ -44,9 +44,14 @@ jobs:
 
     - name: Unzip Terraform
       run: |
-        unzip -o terraform_1.0.9_linux_amd64.zip
-        chmod +x terraform
-        sudo mv terraform /usr/local/bin/
+        mkdir terraform_temp
+        unzip terraform_1.0.9_linux_amd64.zip -d terraform_temp
+        chmod +x terraform_temp/terraform
+        sudo mv terraform_temp/terraform /usr/local/bin/
+
+    - name: Clean up
+      run: |
+        rm -rf terraform_temp
 
     - name: Terraform Init
       run: terraform init
