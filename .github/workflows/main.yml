@@ -38,6 +38,9 @@ jobs:
         docker build -t $ECR_REGISTRY/${{ matrix.project }}:${{ github.sha }} .
         docker push $ECR_REGISTRY/${{ matrix.project }}:${{ github.sha }}
 
+    - name: Move to parent directory
+      run: cd ..
+
     - name: Download Terraform
       run: |
         curl -LO "https://releases.hashicorp.com/terraform/1.0.9/terraform_1.0.9_linux_amd64.zip"
