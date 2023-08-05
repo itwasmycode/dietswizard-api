@@ -60,8 +60,10 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    - name: List files in terraform directory
-      run: ls -la terraform
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name : Change directory
+      run : cd terraform
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve -var-file=terraform/variables.tfvars
+      run: terraform apply -auto-approve -var-file=variables.tfvars
