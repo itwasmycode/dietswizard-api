@@ -43,9 +43,9 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
     }
 
     val responseMap: Map[String, JsValue] = Map(
-      "status" -> "",
-      "access_token" -> "",
-      "refresh_token" -> ""
+      "status" -> JsString("200"),
+      "access_token" -> JsString("abc"),
+      "refresh_token" -> JsString("123")
     )
 
     val jsonResponse: String = Json.stringify(Json.toJson(responseMap))
