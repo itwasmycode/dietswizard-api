@@ -9,9 +9,9 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
   override def handleRequest(event: JavaMap[String, String], context: Context): String = {
     //originden alınacak pipi
     val scalaMap: scala.collection.mutable.Map[String, String] = event.asScala
-    private val jwtIssuer = event.getOrElse("origin","dietswizard")
+    val jwtIssuer = event.getOrElse("origin","dietswizard")
     // Replace with your desired issuer
-    private val jwtAudience = event.getOrElse("origin","dietswizard")
+    val jwtAudience = event.getOrElse("origin","dietswizard")
 
     def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): String = {
       val now = new Date()
