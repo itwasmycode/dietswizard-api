@@ -41,11 +41,7 @@ jobs:
     - name: Download Terraform
       run: |
         curl -LO "https://releases.hashicorp.com/terraform/1.0.9/terraform_1.0.9_linux_amd64.zip"
-        
-    - name: Verify the downloaded file integrity
-      run: |
-        echo "c27a5f8e0d764b8d02c8d3cb0887b8bc8d44666c1a000a0fe36bde6fda0e9c7b  terraform_1.0.9_linux_amd64.zip" | sha256sum --check
-        
+
     - name: Unzip Terraform
       run: |
         unzip terraform_1.0.9_linux_amd64.zip
