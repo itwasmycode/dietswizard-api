@@ -60,5 +60,8 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
+    - name: Terraform show
+      run : ls
+
     - name: Terraform Apply
       run: terraform apply -auto-approve -var-file=variables.tfvars
