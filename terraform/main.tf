@@ -149,6 +149,22 @@ resource "aws_iam_role" "lambda_role" {
       }
     ]
   })
+
+  # Attach a policy with necessary EC2 permissions
+  policy {
+    policy_name = "LambdaEC2Permissions"
+    policy_document = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect   = "Allow"
+          Action   = "ec2:CreateNetworkInterface"
+          Resource = "*"
+        }
+        # Add more permissions here if needed for your Lambda function
+      ]
+    })
+  }
 }
 
 # Create a security group for the Lambda function
