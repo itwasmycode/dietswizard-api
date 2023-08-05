@@ -108,7 +108,7 @@ resource "aws_db_subnet_group" "example" {
 resource "aws_lambda_function" "example_lambda" {
   function_name    = "example-lambda"
   role             = aws_iam_role.lambda_role.arn
-  runtime          = "provided.al2"  # Use the custom runtime for container images
+  package_type     = "Image"
   image_uri        = var.image_uri  # Replace with your ECR image URI
   memory_size      = 1024  # Set the memory size for the Lambda function
   timeout          = 10   # Set the timeout in seconds for the Lambda function
