@@ -89,7 +89,7 @@ resource "aws_security_group" "rds_sg" {
 
 # Create an RDS subnet group
 resource "aws_db_subnet_group" "example" {
-  name       = "posgresubnetgroup"  # Change this name to a unique value
+  name       = "postgres-subnet-group"  # Change this name to a unique value
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
 }
 
