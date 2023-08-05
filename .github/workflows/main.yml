@@ -38,8 +38,8 @@ jobs:
         docker build -t $ECR_REGISTRY/${{ matrix.project }}:${{ github.sha }} .
         docker push $ECR_REGISTRY/${{ matrix.project }}:${{ github.sha }}
 
-    - name: Move to parent directory
-      run: cd ..
+    - name: Move to terraform  directory
+      run: cd terraform
 
     - name: Download Terraform
       run: |
