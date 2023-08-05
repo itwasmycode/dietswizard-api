@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "eu-central-1"
+  region = "eu-central-1"  # Replace with your desired region
 }
 
 # Create a new VPC
@@ -21,9 +21,10 @@ resource "aws_subnet" "test_subnet_2" {
   availability_zone = "eu-central-1b"
 }
 
-# Create a Security Group for instances in public subnet
+# Create a Security Group for instances in the public subnet
 resource "aws_security_group" "public_sg" {
-  vpc_id = aws_vpc.test_vpc.id
+  name_prefix = "public-sg-"
+  vpc_id      = aws_vpc.test_vpc.id
 
   # Allow HTTP access from anywhere
   ingress {
@@ -42,8 +43,10 @@ resource "aws_security_group" "public_sg" {
   }
 }
 
+# Create a Security Group for the application servers
 resource "aws_security_group" "application_sg" {
   name_prefix = "app-sg-"
+  vpc_id      = aws_vpc.test_vpc.id
 
   # Allow inbound traffic from specific CIDR blocks (e.g., application servers, bastion hosts, etc.)
   ingress {
@@ -62,10 +65,12 @@ resource "aws_security_group" "application_sg" {
   }
 }
 
+# Create a Security Group for the RDS instance
 resource "aws_security_group" "rds_sg" {
   name_prefix = "rds-sg-"
+  vpc_id      = aws_vpc.test_vpc.id
 
-  # Allow inbound traffic from application or bastion hosts
+  # Allow inbound traffic from the application or bastion hosts
   ingress {
     from_port       = 5432
     to_port         = 5432
@@ -142,7 +147,8 @@ resource "aws_iam_role" "lambda_role" {
 
 # Create a security group for the Lambda function
 resource "aws_security_group" "lambda_sg" {
-  vpc_id = aws_vpc.test_vpc.id
+  name_prefix = "lambda-sg-"
+  vpc_id      = aws_vpc.test_vpc.id
 
   # Allow outbound internet access for the Lambda function
   egress {
