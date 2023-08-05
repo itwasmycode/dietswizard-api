@@ -1,8 +1,17 @@
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 
+import com.nimbusds.jose._
+import com.nimbusds.jose.crypto._
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
+
 import play.api.libs.json._
 
 import java.util.{ Map => JavaMap }
+import java.util.UUID
+import java.util.Date
+import java.time.Instant
+import java.time.{Instant, ZoneOffset}
 import scala.collection.JavaConverters._
 
 
@@ -11,9 +20,10 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
   override def handleRequest(event: JavaMap[String, String], context: Context): String = {
     //originden alınacak pipi
     val scalaMap: scala.collection.mutable.Map[String, String] = event.asScala
-    val jwtIssuer = event.getOrElse("origin","dietswizard")
+    val immutableScalaMap: scala.collection.immutable.Map[String, String] = scalaMap.toMap
+    val jwtIssuer = immutableScalaMap.getOrElse("origin","dietswizard")
     // Replace with your desired issuer
-    val jwtAudience = event.getOrElse("origin","dietswizard")
+    val jwtAudience = immutableScalaMap.getOrElse("origin","dietswizard")
 
     def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): String = {
       val now = new Date()
