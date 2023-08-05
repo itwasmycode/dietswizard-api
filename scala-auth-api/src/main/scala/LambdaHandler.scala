@@ -28,7 +28,8 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
     def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): scala.collection.immutable.Map[String,String] = {
       val now = new Date()
       val jwtId = java.util.UUID.randomUUID().toString
-      val expirationTime = DateUtils.toSecondsSinceEpoch(Instant.now().plusSeconds(3600))
+      val accessTokenExpirationMinutes = 15
+      val accessTokenExpiration = now.getTime + accessTokenExpirationMinutes * 60 * 1000
       val claimsSet = new JWTClaimsSet.Builder()
         .subject("auth")
         .issuer(jwtIssuer)
@@ -36,7 +37,7 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
         .issueTime(now)
         .jwtID(jwtId)
         .claim("email", email)
-        .expirationTime(new java.util.Date(expirationTime * 1000))
+        .expirationTime(new java.util.Date(accessTokenExpiration))
         .build()
 
       val jwsHeader = new JWSHeader(JWSAlgorithm.HS256)
