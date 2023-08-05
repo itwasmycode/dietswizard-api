@@ -14,6 +14,13 @@ lazy val root = (project in file("."))
       playJson,
       jwt,
       jackson
+    ),
+    dependencyOverrides ++= Seq(
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.15.2",
+      "com.fasterxml.jackson.core" % "jackson-core" % "2.15.2",
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.15.2",
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % "2.15.2",
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.15.2"
     )
   ).settings(
     assembly / assemblyOutputPath := file("target/function.jar")
