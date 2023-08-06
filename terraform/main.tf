@@ -79,6 +79,10 @@ resource "aws_security_group" "rds_sg" {
 resource "aws_db_subnet_group" "example" {
   name       = "postgres-subnet-group"
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
+  lifecycle {
+    # Prevent recreation of the resource if the name attribute doesn't change
+    ignore_changes = [name]
+  }
 }
 
 resource "aws_db_instance" "postgresql" {
@@ -118,6 +122,10 @@ resource "aws_iam_role" "lambda_role" {
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
   name        = "lambda_ec2_policy_test"
+  lifecycle {
+    # Prevent recreation of the resource if the name attribute doesn't change
+    ignore_changes = [name]
+  }
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -164,6 +172,10 @@ resource "aws_lambda_function" "example_lambda" {
   image_uri     = var.image_uri
   memory_size   = 1024
   timeout       = 10
+  lifecycle {
+    # Prevent recreation of the resource if the name attribute doesn't change
+    ignore_changes = [name]
+  }
 
   vpc_config {
     subnet_ids         = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
