@@ -77,13 +77,13 @@ resource "aws_security_group" "rds_sg" {
 }
 
 data "aws_db_subnet_group" "existing_subnet_group" {
-  name = "postgres-subnet-group"  # Change this name to match your existing subnet group name
+  name = "postgres-subnet-group" # Change this name to match your existing subnet group name
 }
 
 resource "aws_db_subnet_group" "example" {
-  count = data.aws_db_subnet_group.existing_subnet_group ? 0 : 1  # Conditionally create if it doesn't exist
+  count = data.aws_db_subnet_group.existing_subnet_group.count > 0 ? 0 : 1
 
-  name       = "postgres-subnet-group"  # Change this name to a unique value
+  name       = "postgres-subnet-group" # Change this name to a unique value
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
 }
 
@@ -112,7 +112,6 @@ resource "aws_iam_role" "lambda_role" {
 }
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
-  count = aws_iam_policy.lambda_ec2_policy ? 0 : 1  # Conditionally create if it doesn't exist
 
   name = "lambda_ec2_policy_test"
 
@@ -173,8 +172,6 @@ resource "aws_security_group" "lambda_sg" {
 }
 
 resource "aws_db_instance" "postgresql" {
-  count = aws_iam_role.lambda_role ? 1 : 0  # Create the RDS instance if the IAM role exists
-
   identifier             = "example-db"
   engine                 = "postgres"
   engine_version         = "15.3"
@@ -188,10 +185,8 @@ resource "aws_db_instance" "postgresql" {
 }
 
 resource "aws_lambda_function" "example_lambda" {
-  count = aws_iam_role.lambda_role ? 1 : 0  # Create the Lambda function if the IAM role exists
-
   function_name = "example-lambda"
-  role          = aws_iam_role.lambda_role[0].arn
+  role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
