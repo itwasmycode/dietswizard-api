@@ -186,10 +186,6 @@ resource "aws_lambda_function" "example_lambda" {
   memory_size   = 1024
   timeout       = 10
 
-  lifecycle {
-    # Prevent recreation of the resource if the name attribute doesn't change
-    ignore_changes = [name]
-  }
 
   vpc_config {
     subnet_ids         = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
