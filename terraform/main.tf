@@ -114,7 +114,7 @@ data "aws_iam_policy" "existing_lambda_ec2_policy" {
 }
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
-  count = data.aws_iam_policy.existing_lambda_ec2_policy ? 0 : 1
+  count = data.aws_iam_policy.existing_lambda_ec2_policy[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
