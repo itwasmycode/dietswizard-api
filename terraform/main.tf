@@ -172,6 +172,21 @@ resource "aws_security_group" "lambda_sg" {
   }
 }
 
+resource "aws_db_instance" "postgresql" {
+  count = aws_iam_role.lambda_role ? 1 : 0  # Create the RDS instance if the IAM role exists
+
+  identifier             = "example-db"
+  engine                 = "postgres"
+  engine_version         = "15.3"
+  instance_class         = "db.t3.micro"
+  username               = var.postgre_id
+  password               = var.postgre_pw
+  allocated_storage      = 20
+  publicly_accessible    = false
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.example[0].name
+}
+
 resource "aws_lambda_function" "example_lambda" {
   count = aws_iam_role.lambda_role ? 1 : 0  # Create the Lambda function if the IAM role exists
 
