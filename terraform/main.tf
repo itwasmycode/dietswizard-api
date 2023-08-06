@@ -154,7 +154,7 @@ resource "aws_iam_policy" "lambda_ec2_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
-  policy_arn = aws_iam_policy.lambda_ec2_policy.arn
+  policy_arn = aws_iam_policy.lambda_ec2_policy.id
   role       = aws_iam_role.lambda_role.name
 }
 
