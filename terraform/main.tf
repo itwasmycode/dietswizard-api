@@ -80,10 +80,11 @@ data "aws_db_subnet_group" "existing_subnet_group" {
   name = "postgres-subnet-group" # Change this name to match your existing subnet group name
 }
 
+# Correcting the conditional count for aws_db_subnet_group.example
 resource "aws_db_subnet_group" "example" {
   count = length(data.aws_db_subnet_group.existing_subnet_group) > 0 ? 0 : 1
 
-  name       = "postgres-subnet-group" # Change this name to a unique value
+  name       = "postgres-subnet-group"
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
 }
 
@@ -150,7 +151,7 @@ resource "aws_iam_policy" "lambda_ec2_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
-  count = length(aws_iam_policy.lambda_ec2_policy) > 0 ? 1 : 0 # Attach the policy if it exists
+  count = length(aws_iam_policy.lambda_ec2_policy) > 0 ? 1 : 0
 
   policy_arn = aws_iam_policy.lambda_ec2_policy.arn
   role       = aws_iam_role.lambda_role.name
@@ -170,7 +171,9 @@ resource "aws_security_group" "lambda_sg" {
 }
 
 resource "aws_db_instance" "postgresql" {
-  count = length(aws_db_subnet_group.example) > 0 ? 1 : 0  # Create the RDS instance if the subnet group exists
+  count = length(aws_db_subnet_group.example) > 0 ? 1 : 0
+
+  # ... (Other properties remain the same)
 
   identifier             = "example-db"
   engine                 = "postgres"
@@ -181,7 +184,7 @@ resource "aws_db_instance" "postgresql" {
   allocated_storage      = 20
   publicly_accessible    = false
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.example[0].name
+  db_subnet_group_name = count > 0 ? aws_db_subnet_group.example[0].name : null
 }
 
 resource "aws_lambda_function" "example_lambda" {
