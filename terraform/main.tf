@@ -199,7 +199,7 @@ resource "aws_lambda_function" "example_lambda" {
 }
 
 output "rds_endpoint" {
-  value = aws_db_instance.postgresql.endpoint
+  value = length(aws_db_instance.postgresql) > 0 ? aws_db_instance.postgresql[0].endpoint : null
 }
 
 output "lambda_arn" {
