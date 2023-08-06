@@ -109,23 +109,6 @@ resource "aws_db_instance" "postgresql" {
   # Add any other necessary RDS settings
 }
 
-# Create a Lambda function
-resource "aws_lambda_function" "example_lambda" {
-  function_name = "example-lambda"
-  role          = aws_iam_role.lambda_role.arn
-  package_type  = "Image"
-  image_uri     = var.image_uri  # Replace with your ECR image URI
-  memory_size   = 1024           # Set the memory size for the Lambda function
-  timeout       = 10             # Set the timeout in seconds for the Lambda function
-
-  vpc_config {
-    subnet_ids         = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
-    security_group_ids = [aws_security_group.lambda_sg.id]
-  }
-
-  # Add any other necessary Lambda function settings
-}
-
 # Create a random string to ensure a unique IAM role name
 resource "random_string" "random_suffix" {
   length  = 8
@@ -188,11 +171,27 @@ resource "aws_security_group" "lambda_sg" {
   }
 }
 
+# Create a Lambda function
+resource "aws_lambda_function" "example_lambda" {
+  function_name = "example-lambda"
+  role          = aws_iam_role.lambda_role.arn
+  package_type  = "Image"
+  image_uri     = var.image_uri  # Replace with your ECR image URI
+  memory_size   = 1024           # Set the memory size for the Lambda function
+  timeout       = 10             # Set the timeout in seconds for the Lambda function
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
+  # Add any other necessary Lambda function settings
+}
+
 # Output the RDS endpoint and the Lambda function ARN
 output "rds_endpoint" {
   value = aws_db_instance.postgresql.endpoint
 }
 
 output "lambda_arn" {
-  value = aws_lambda_function.example_lambda.arn
-}
+  value = aws_lambda_function.example_lambda
