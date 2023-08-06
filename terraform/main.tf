@@ -88,13 +88,9 @@ resource "aws_db_subnet_group" "example" {
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
 }
 
-resource "random_string" "random_suffix" {
-  length  = 8
-  special = false
-}
 // user, role, policy, user-group, security-group
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda-apisubnetgroup-${random_string.random_suffix.result}"
+  name = "lambda-apisubnetgroup"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -189,7 +185,7 @@ resource "aws_db_instance" "postgresql" {
 
 resource "aws_lambda_function" "example_lambda" {
   function_name = "example-lambda"
-  count = length(aws_lambda_function.example_lambda)> 0 ? 1 :0
+  count         = length(aws_lambda_function.example_lambda)
   role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
