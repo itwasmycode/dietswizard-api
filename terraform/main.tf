@@ -117,37 +117,26 @@ resource "aws_iam_role" "lambda_role" {
 }
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
-  name        = "LambdaEC2Permissions"
-  description = "Policy granting EC2 permissions for Lambda function"
-  policy      = jsonencode({
+  name        = "example-policy"
+  policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "ec2:DescribeNetworkInterfaces"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ec2:CreateNetworkInterface"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ec2:DeleteNetworkInterface"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ec2:AttachNetworkInterface"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ec2:DescribeInstances"
-        Resource = "*"
-      }
-    ]
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+      Resource = ["arn:aws:logs:*:*:*"]
+    },{
+      Effect = "Allow"
+      Action = [
+        "ec2:CreateNetworkInterface",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DeleteNetworkInterface"
+      ]
+      Resource = ["*"]
+    }]
   })
 }
 
