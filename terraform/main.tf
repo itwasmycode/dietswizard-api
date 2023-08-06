@@ -76,12 +76,20 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
+data "aws_db_subnet_group" "existing_subnet_group" {
+  name = "postgres-subnet-group"  # Change this name to match your existing subnet group name
+}
+
 resource "aws_db_subnet_group" "example" {
-  name       = "postgres-subnet-group"
+  count = length(data.aws_db_subnet_group.existing_subnet_group) > 0 ? 0 : 1  # Conditionally create if it doesn't exist
+
+  name       = "postgres-subnet-group"  # Change this name to a unique value
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
 }
 
 resource "aws_db_instance" "postgresql" {
+  count = length(data.aws_db_subnet_group.existing_subnet_group) > 0 ? 1 : 0  # Conditionally create if the subnet group doesn't exist
+
   identifier             = "example-db"
   engine                 = "postgres"
   engine_version         = "15.3"
@@ -91,12 +99,20 @@ resource "aws_db_instance" "postgresql" {
   allocated_storage      = 20
   publicly_accessible    = false
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.example.name
+  db_subnet_group_name   = aws_db_subnet_group.example[count.index].name
+
+  # Add lifecycle block to prevent recreation of the resource if the name attribute doesn't change
 }
 
+resource "random_string" "random_suffix" {
+  length  = 8
+  special = false
+}
 
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda-apisubnetgroup"
+  count = length(data.aws_iam_policy.existing_lambda_policy_group) > 0 ? 0 : 1  # Conditionally create if it doesn't exist
+
+  name = "lambda-apisubnetgroup-${random_string.random_suffix.result}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -112,33 +128,45 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
+data "aws_iam_policy" "existing_lambda_policy_group" {
+  name = "lambda_ec2_policy_test"  # Change this name to match your existing IAM policy name
+}
+
 resource "aws_iam_policy" "lambda_ec2_policy" {
-  name        = "lambda_ec2_policy_test"
+  count = length(data.aws_iam_policy.existing_lambda_policy_group) > 0 ? 0 : 1  # Conditionally create if it doesn't exist
+
+  name = "lambda_ec2_policy_test"
+
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ]
-      Resource = ["arn:aws:logs:*:*:*"]
-    },{
-      Effect = "Allow"
-      Action = [
-        "ec2:CreateNetworkInterface",
-        "ec2:DescribeNetworkInterfaces",
-        "ec2:DeleteNetworkInterface"
-      ]
-      Resource = ["*"]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = ["arn:aws:logs:*:*:*"]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface"
+        ]
+        Resource = ["*"]
+      }
+    ]
   })
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
-  policy_arn = aws_iam_policy.lambda_ec2_policy.arn
-  role       = aws_iam_role.lambda_role.name
+  count = length(data.aws_iam_policy.existing_lambda_policy_group) > 0 ? 0 : 1  # Conditionally create if it doesn't exist
+
+  policy_arn = aws_iam_policy.lambda_ec2_policy[count.index].arn
+  role       = aws_iam_role.lambda_role[count.index].name
 }
 
 resource "aws_security_group" "lambda_sg" {
@@ -154,8 +182,10 @@ resource "aws_security_group" "lambda_sg" {
 }
 
 resource "aws_lambda_function" "example_lambda" {
+  count = length(data.aws_db_subnet_group.existing_subnet_group) > 0 ? 0 : 1  # Conditionally create if the subnet group doesn't exist
+
   function_name = "example-lambda"
-  role          = aws_iam_role.lambda_role.arn
+  role          = aws_iam_role.lambda_role[count.index].arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
@@ -168,9 +198,9 @@ resource "aws_lambda_function" "example_lambda" {
 }
 
 output "rds_endpoint" {
-  value = aws_db_instance.postgresql.endpoint
+  value = aws_db_instance.postgresql[0].endpoint
 }
 
 output "lambda_arn" {
-  value = aws_lambda_function.example_lambda.arn
+  value = aws_lambda_function.example_lambda[0].arn
 }
