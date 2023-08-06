@@ -145,6 +145,11 @@ resource "aws_iam_policy" "lambda_ec2_policy" {
         Effect   = "Allow"
         Action   = "ec2:CreateNetworkInterface"
         Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ec2:DescribeNetworkInterfaces"
+        Resource = "*"
       }
       # Add more permissions here if needed for your Lambda function
     ]
