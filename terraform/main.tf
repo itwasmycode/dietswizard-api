@@ -110,7 +110,7 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 data "aws_iam_policy" "existing_lambda_ec2_policy" {
-  arn = "arn:aws:iam::aws:policy/lambda_ec2_policy_test"
+  arn = "arn:aws:iam::aws:policy/lambda_ec2_policy"
 }
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
