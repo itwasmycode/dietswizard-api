@@ -76,13 +76,15 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
+data "aws_db_subnet_group" "existing_subnet_group" {
+  name = "postgres-subnet-group"  # Change this name to match your existing subnet group name
+}
+
 resource "aws_db_subnet_group" "example" {
-  name       = "postgres-subnet-group"
+  count = data.aws_db_subnet_group.existing_subnet_group ? 0 : 1  # Conditionally create if it doesn't exist
+
+  name       = "postgres-subnet-group"  # Change this name to a unique value
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
-  lifecycle {
-    # Prevent recreation of the resource if the name attribute doesn't change
-    ignore_changes = [name]
-  }
 }
 
 resource "aws_db_instance" "postgresql" {
@@ -120,33 +122,40 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
+data "aws_iam_policy" "existing_lambda_policy_group" {
+  name = "postgres-subnet-group"  # Change this name to match your existing subnet group name
+}
+
 resource "aws_iam_policy" "lambda_ec2_policy" {
-  name        = "lambda_ec2_policy_test"
-  lifecycle {
-    # Prevent recreation of the resource if the name attribute doesn't change
-    ignore_changes = [name]
-  }
+  count = data.aws_iam_policy.existing_lambda_policy_group ? 0 : 1  # Conditionally create if it doesn't exist
+
+  name = "lambda_ec2_policy_test"
+
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ]
-      Resource = ["arn:aws:logs:*:*:*"]
-    },{
-      Effect = "Allow"
-      Action = [
-        "ec2:CreateNetworkInterface",
-        "ec2:DescribeNetworkInterfaces",
-        "ec2:DeleteNetworkInterface"
-      ]
-      Resource = ["*"]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = ["arn:aws:logs:*:*:*"]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface"
+        ]
+        Resource = ["*"]
+      }
+    ]
   })
 }
+
 
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
   policy_arn = aws_iam_policy.lambda_ec2_policy.arn
