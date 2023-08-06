@@ -81,7 +81,7 @@ data "aws_db_subnet_group" "existing_subnet_group" {
 }
 
 resource "aws_db_subnet_group" "example" {
-  count = data.aws_db_subnet_group.existing_subnet_group.count > 0 ? 0 : 1
+  count = length(data.aws_db_subnet_group.existing_subnet_group) > 0 ? 0 : 1
 
   name       = "postgres-subnet-group" # Change this name to a unique value
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
@@ -93,8 +93,6 @@ resource "random_string" "random_suffix" {
 }
 
 resource "aws_iam_role" "lambda_role" {
-  count = aws_iam_role.lambda_role ? 0 : 1  # Conditionally create if it doesn't exist
-
   name = "lambda-apisubnetgroup-${random_string.random_suffix.result}"
 
   assume_role_policy = jsonencode({
@@ -112,7 +110,6 @@ resource "aws_iam_role" "lambda_role" {
 }
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
-
   name = "lambda_ec2_policy_test"
 
   policy = jsonencode({
@@ -153,11 +150,12 @@ resource "aws_iam_policy" "lambda_ec2_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
-  count = aws_iam_policy.lambda_ec2_policy ? 1 : 0  # Attach the policy if it exists
+  count = length(aws_iam_policy.lambda_ec2_policy) > 0 ? 1 : 0 # Attach the policy if it exists
 
-  policy_arn = aws_iam_policy.lambda_ec2_policy[0].arn
-  role       = aws_iam_role.lambda_role[0].name
+  policy_arn = aws_iam_policy.lambda_ec2_policy.arn
+  role       = aws_iam_role.lambda_role.name
 }
+
 
 resource "aws_security_group" "lambda_sg" {
   name_prefix = "lambda-sg-"
