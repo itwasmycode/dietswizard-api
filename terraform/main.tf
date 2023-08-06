@@ -194,4 +194,5 @@ output "rds_endpoint" {
 }
 
 output "lambda_arn" {
-  value = aws_lambda_function.example_lambda
+  value = aws_lambda_function.example_lambda.arn
+}
