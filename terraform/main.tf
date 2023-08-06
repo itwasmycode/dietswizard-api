@@ -91,7 +91,7 @@ resource "aws_db_subnet_group" "example" {
 // user, role, policy, user-group, security-group
 resource "aws_iam_role" "lambda_role" {
   name = "lambda-apisubnetgroup"
-
+  count = length(aws_iam_role.lambda_role.name) > 0 ? 0 : 1
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -185,7 +185,7 @@ resource "aws_db_instance" "postgresql" {
 
 resource "aws_lambda_function" "example_lambda" {
   function_name = "example-lambda"
-  count         = length(aws_lambda_function.example_lambda)
+  count         = length(aws_lambda_function.example_lambda)>0 ? 1 : 0
   role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
@@ -200,4 +200,9 @@ resource "aws_lambda_function" "example_lambda" {
 
 output "rds_endpoint" {
   value = length(aws_db_instance.postgresql) > 0 ? aws_db_instance.postgresql[0].endpoint : null
+}
+
+
+output "lambda_arn" {
+  value = aws_lambda_function.example_lambda[0].arn
 }
