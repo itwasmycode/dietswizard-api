@@ -173,8 +173,6 @@ resource "aws_security_group" "lambda_sg" {
 resource "aws_db_instance" "postgresql" {
   count = length(aws_db_subnet_group.example) > 0 ? 1 : 0
 
-  # ... (Other properties remain the same)
-
   identifier             = "example-db"
   engine                 = "postgres"
   engine_version         = "15.3"
@@ -184,7 +182,7 @@ resource "aws_db_instance" "postgresql" {
   allocated_storage      = 20
   publicly_accessible    = false
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name = count > 0 ? aws_db_subnet_group.example[0].name : null
+  db_subnet_group_name   = aws_db_subnet_group.example[0].name
 }
 
 resource "aws_lambda_function" "example_lambda" {
@@ -204,6 +202,7 @@ resource "aws_lambda_function" "example_lambda" {
 output "rds_endpoint" {
   value = length(aws_db_instance.postgresql) > 0 ? aws_db_instance.postgresql[0].endpoint : null
 }
+
 
 output "lambda_arn" {
   value = aws_lambda_function.example_lambda.arn
