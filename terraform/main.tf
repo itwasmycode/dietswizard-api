@@ -197,9 +197,9 @@ resource "aws_lambda_function" "example_lambda" {
 }
 
 output "rds_endpoint" {
-  value = aws_db_instance.postgresql[0].endpoint
+  value = aws_db_instance.postgresql.endpoint
 }
 
 output "lambda_arn" {
-  value = aws_lambda_function.example_lambda[0].arn
+  value = aws_lambda_function.example_lambda.arn
 }
