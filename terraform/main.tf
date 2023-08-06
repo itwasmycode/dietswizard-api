@@ -152,7 +152,7 @@ resource "aws_iam_policy" "lambda_ec2_policy" {
 
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
   policy_arn = aws_iam_policy.lambda_ec2_policy[0].arn
-  role       = aws_iam_role.lambda_role.name
+  role       = aws_iam_role.lambda_role[0].name
 }
 
 
@@ -186,7 +186,7 @@ resource "aws_db_instance" "postgresql" {
 resource "aws_lambda_function" "example_lambda" {
   function_name = "example-lambda"
   count         = length(aws_lambda_function.example_lambda)>0 ? 1 : 0
-  role          = aws_iam_role.lambda_role.arn
+  role          = aws_iam_role.lambda_role[0].arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
