@@ -81,7 +81,7 @@ data "aws_db_subnet_group" "existing_subnet_group" {
 }
 
 resource "aws_db_subnet_group" "example" {
-  for_each = data.aws_db_subnet_group.existing_subnet_group ? {} : { "example" = true }  # Conditionally create if it doesn't exist
+  for_each = data.aws_db_subnet_group.existing_subnet_group ? {} : { example = true }  # Conditionally create if it doesn't exist
 
   name       = "postgres-subnet-group"  # Change this name to a unique value
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
@@ -102,13 +102,8 @@ resource "aws_db_instance" "postgresql" {
   db_subnet_group_name   = aws_db_subnet_group.example["example"].name
 }
 
-resource "random_string" "random_suffix" {
-  length  = 8
-  special = false
-}
-
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda-apisubnetgroup-${random_string.random_suffix.result}"
+  name = "lambda-apisubnetgroup"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -129,7 +124,7 @@ data "aws_iam_policy" "existing_lambda_policy_group" {
 }
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
-  for_each = data.aws_iam_policy.existing_lambda_policy_group ? {} : { "example" = true }  # Conditionally create if it doesn't exist
+  for_each = data.aws_iam_policy.existing_lambda_policy_group ? {} : { lambda_ec2_policy = true }  # Conditionally create if it doesn't exist
 
   name = "lambda_ec2_policy_test"
 
