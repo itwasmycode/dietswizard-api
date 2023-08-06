@@ -94,30 +94,55 @@ resource "aws_db_instance" "postgresql" {
   db_subnet_group_name   = aws_db_subnet_group.example.name
 }
 
-data "aws_caller_identity" "source" {
-  provider = aws.source
+resource "random_string" "random_suffix" {
+  length  = 8
+  special = false
 }
 
-data "aws_iam_policy_document" "assume_role" {
-  provider = aws.destination
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.source.account_id}:root"]
-    }
-  }
-}
-data "aws_iam_policy" "ec2" {
-  provider = aws.destination
-  name     = "AmazonEC2FullAccess"
+resource "aws_iam_role" "lambda_role" {
+  name = "lambda-apisubnetgroup-${random_string.random_suffix.result}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
 }
 
-resource "aws_iam_role" "assume_role" {
-  provider            = aws.destination
-  name                = "assume_role"
-  assume_role_policy  = data.aws_iam_policy_document.assume_role.json
-  managed_policy_arns = [data.aws_iam_policy.ec2.arn]
+resource "aws_iam_policy" "lambda_ec2_policy" {
+  name        = "lambda_ec2_policy_test"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+      Resource = ["arn:aws:logs:*:*:*"]
+    },{
+      Effect = "Allow"
+      Action = [
+        "ec2:CreateNetworkInterface",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DeleteNetworkInterface"
+      ]
+      Resource = ["*"]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
+  policy_arn = aws_iam_policy.lambda_ec2_policy.arn
+  role       = aws_iam_role.lambda_role.name
 }
 
 resource "aws_security_group" "lambda_sg" {
@@ -134,7 +159,7 @@ resource "aws_security_group" "lambda_sg" {
 
 resource "aws_lambda_function" "example_lambda" {
   function_name = "example-lambda"
-  role          = aws_iam_role.assume_role.arn
+  role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
