@@ -109,9 +109,12 @@ resource "aws_iam_role" "lambda_role" {
     ]
   })
 }
+data "aws_iam_policy" "existing_lambda_ec2_policy" {
+  arn = "arn:aws:iam::aws:policy/lambda_ec2_policy_test"
+}
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
-  name = "lambda_ec2_policy_test"
+  count = data.aws_iam_policy.existing_lambda_ec2_policy ? 0 : 1
 
   policy = jsonencode({
     Version = "2012-10-17"
