@@ -83,6 +83,7 @@ jobs:
     - name: Import IAM role if exists
       working-directory: terraform
       run: |
+        echo "${ROLE_ARN}"
         if [ "$ROLE_ARN" != "None" ]; then
           terraform import aws_iam_role.lambda_role "$ROLE_ARN"
         fi    
