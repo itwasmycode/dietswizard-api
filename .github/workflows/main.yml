@@ -171,7 +171,7 @@ jobs:
       working-directory: terraform
       run: |
         if [ "$APP_SG_ID" != "None" ]; then
-          terraform import aws_security_group.app-sg-lambda "$APP_SG_ID"
+          terraform import aws_security_group.application_sg "$APP_SG_ID"
         fi
 
     - name: Import Public Security Group if exists
