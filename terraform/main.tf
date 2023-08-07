@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_vpc" "my_vpc" {
-  cidr_block           = "192.168.0./16"
+  cidr_block           = "192.168.0.1/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
