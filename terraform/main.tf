@@ -210,7 +210,6 @@ resource "aws_security_group" "lambda_sg" {
 }
 
 resource "aws_db_instance" "postgresql" {
-  count = length(aws_db_subnet_group.example) > 0 ? 1 : 0
 
   identifier             = "example-db"
   engine                 = "postgres"
