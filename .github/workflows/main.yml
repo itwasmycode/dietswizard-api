@@ -76,7 +76,7 @@ jobs:
     - name: Import VPC if exists
       working-directory: terraform
       run: |
-        VPC_ID="vpc-0f69da5cf53478e1e"
+        VPC_ID="vpc-099bcb490334e7b0a"
         if [ ! -z "$VPC_ID" ]; then
           terraform import aws_vpc.my_vpc $VPC_ID
         fi

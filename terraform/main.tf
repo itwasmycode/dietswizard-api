@@ -20,7 +20,7 @@ resource "aws_subnet" "test_subnet_2" {
 }
 
 resource "aws_security_group" "public_sg" {
-  name_prefix = "public-sg-"
+  name_prefix = "public-sg"
   vpc_id      = aws_vpc.my_vpc.id
 
   ingress {
