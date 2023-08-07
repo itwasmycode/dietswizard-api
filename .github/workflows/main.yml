@@ -80,6 +80,13 @@ jobs:
         if [ ! -z "$VPC_ID" ]; then
           terraform import aws_vpc.my_vpc $VPC_ID
         fi
+    - name: Check if DB Subnet Exists
+      working-directory: terraform
+      run : |
+        SUBNET_GROUP_NAME=$(aws rds describe-db-subnet-groups --query "DBSubnetGroups[?DBSubnetGroupName=='postgres-subnet-group'].DBSubnetGroupName" --output text)
+        if [ "$SUBNET_GROUP_NAME" == "postgres-subnet-group" ]; then
+          terraform import aws_db_subnet_group.my_db_subnet_group postgres-subnet-group
+        fi
     - name: Terraform Apply
       working-directory: terraform
       run: terraform apply -auto-approve -var-file=variables.tfvars
