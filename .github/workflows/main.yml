@@ -127,6 +127,24 @@ jobs:
         else
           echo "Security Group not found."
         fi
+    - name: Check if RDS Security Group exists
+      id: check-rds-sg
+      run: |
+        RDS_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=rds-sg-lambda" --query 'SecurityGroups[0].GroupId' --output text)
+        if [ -n "$RDS_SG_ID" ]; then
+          echo "RDS_SG_ID=${RDS_SG_ID}" >> $GITHUB_ENV
+          echo "RDS Security Group found: ${RDS_SG_ID}"
+        else
+          echo "RDS_SG_ID=None" >> $GITHUB_ENV
+          echo "RDS Security Group not found."
+        fi
+
+    - name: Import RDS Security Group if exists
+      working-directory: terraform
+      run: |
+        if [ "$RDS_SG_ID" != "None" ]; then
+          terraform import aws_security_group.rds_sg "$RDS_SG_ID"
+        fi
 
     - name: Import Security Group if exists
       working-directory: terraform
