@@ -68,6 +68,7 @@ jobs:
       working-directory: terraform
       run: terraform init
     - name: Import IAM role if exists
+      working-directory: terraform
       run: |  
         if [ "$ROLE_ARN" != "None" ]; then
           terraform import aws_iam_role.lambda_role lambda-apisubnetgroup
