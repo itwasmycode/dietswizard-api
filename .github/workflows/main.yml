@@ -80,6 +80,55 @@ jobs:
           echo "IAM role not found."
         fi
 
+
+    - name: Check if Lambda Security Group exists
+      id: check-lambda-sg
+      run: |
+        SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=lambda-sg" --query 'SecurityGroups[0].GroupId' --output text)
+        if [ -n "$SG_ID" ]; then
+          echo "SG_ID=${SG_ID}" >> $GITHUB_ENV
+          echo "Lambda Security Group found: ${SG_ID}"
+        else
+          echo "SG_ID=None" >> $GITHUB_ENV
+          echo "Lambda Security Group not found."
+        fi
+
+    - name: Check if RDS Security Group exists
+      id: check-rds-sg
+      run: |
+        RDS_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=rds-sg-lambda" --query 'SecurityGroups[0].GroupId' --output text)
+        if [ -n "$RDS_SG_ID" ]; then
+          echo "RDS_SG_ID=${RDS_SG_ID}" >> $GITHUB_ENV
+          echo "RDS Security Group found: ${RDS_SG_ID}"
+        else
+          echo "RDS_SG_ID=None" >> $GITHUB_ENV
+          echo "RDS Security Group not found."
+        fi
+
+    - name: Check if Public Security Group exists
+      id: check-public-sg
+      run: |
+        PUBLIC_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=public-sg-lambda" --query 'SecurityGroups[0].GroupId' --output text)
+        if [ -n "PUBLIC_SG_ID" ]; then
+          echo "PUBLIC_SG_ID=${PUBLIC_SG_ID}" >> $GITHUB_ENV
+          echo "Public Security Group found: ${PUBLIC_SG_ID}"
+        else
+          echo "PUBLIC_SG_ID=None" >> $GITHUB_ENV
+          echo "Public Security Group not found."
+        fi
+
+    - name: Check if App Security Group exists
+      id: check-app-sg
+      run: |
+        APP_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=app-sg-lambda" --query 'SecurityGroups[0].GroupId' --output text)
+        if [ -n "$APP_SG_ID" ]; then
+          echo "APP_SG_ID=${APP_SG_ID}" >> $GITHUB_ENV
+          echo "APP Security Group found: ${APP_SG_ID}"
+        else
+          echo "APP_SG_ID=None" >> $GITHUB_ENV
+          echo "APP Security Group not found."
+        fi
+
     - name: Import IAM role if exists
       working-directory: terraform
       run: |
@@ -98,45 +147,38 @@ jobs:
 
     - name: Import DB Subnet if Exists
       working-directory: terraform
-      run : |
+      run: |
         SUBNET_GROUP_NAME=$(aws rds describe-db-subnet-groups --query "DBSubnetGroups[?DBSubnetGroupName=='postgres-subnet-group'].DBSubnetGroupName" --output text)
         if [ "$SUBNET_GROUP_NAME" == "postgres-subnet-group" ]; then
         terraform import aws_db_subnet_group.example postgres-subnet-group
         fi
+
     - name: Import Subnets if they exist
       working-directory: terraform
       run: |
         SUBNET_ID_1=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=cidr,Values=10.0.0.0/25" --query 'Subnets[0].SubnetId' --output text)
         SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=cidr,Values=10.0.0.128/25" --query 'Subnets[0].SubnetId' --output text)
-    
+
         if [ "$SUBNET_ID_1" != "None" ] && [ "$SUBNET_ID_1" != "null" ]; then
         terraform import aws_subnet.my_subnet_1 $SUBNET_ID_1
         fi
-    
+
         if [ "$SUBNET_ID_2" != "None" ] && [ "$SUBNET_ID_2" != "null" ]; then
         terraform import aws_subnet.my_subnet_2 $SUBNET_ID_2
         fi
 
-    - name: Check if Security Group exists
-      id: check-sg
+    - name: Import App Security Group if exists
+      working-directory: terraform
       run: |
-        SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=lambda-sg" --query 'SecurityGroups[0].GroupId' --output text)
-        echo "SG_ID=${SG_ID}" >> $GITHUB_ENV
-        if [ "$SG_ID" != "None" ]; then
-          echo "Security Group found: ${SG_ID}"
-        else
-          echo "Security Group not found."
+        if [ "$APP_SG_ID" != "None" ]; then
+          terraform import aws_security_group.app-sg-lambda "$APP_SG_ID"
         fi
-    - name: Check if RDS Security Group exists
-      id: check-rds-sg
+
+    - name: Import Public Security Group if exists
+      working-directory: terraform
       run: |
-        RDS_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=rds-sg-lambda" --query 'SecurityGroups[0].GroupId' --output text)
-        if [ -n "$RDS_SG_ID" ]; then
-          echo "RDS_SG_ID=${RDS_SG_ID}" >> $GITHUB_ENV
-          echo "RDS Security Group found: ${RDS_SG_ID}"
-        else
-          echo "RDS_SG_ID=None" >> $GITHUB_ENV
-          echo "RDS Security Group not found."
+        if [ "$PUBLIC_SG_ID" != "None" ]; then
+          terraform import aws_security_group.public-sg-lambda "$PUBLIC_SG_ID"
         fi
 
     - name: Import RDS Security Group if exists
