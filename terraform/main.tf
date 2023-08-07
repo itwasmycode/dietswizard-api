@@ -81,7 +81,7 @@ resource "aws_security_group" "rds_sg" {
 # Correcting the conditional count for aws_db_subnet_group.example
 resource "aws_db_subnet_group" "example" {
   name       = "postgres-subnet-group"
-  subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
+  subnet_ids = [aws_subnet.my_subnet_1.id, aws_subnet.my_subnet_2.id]
 }
 
 // user, role, policy, user-group, security-group
