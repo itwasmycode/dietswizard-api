@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_vpc" "my_vpc" {
-  cidr_block           = "192.168.0.0/16"
+  cidr_block           = "192.168.0./16"
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
@@ -13,7 +13,7 @@ resource "aws_vpc" "my_vpc" {
 
 resource "aws_subnet" "my_subnet_1" {
   vpc_id                  = aws_vpc.my_vpc.id
-  cidr_block              = "192.168.0.0/17" # Updated CIDR block
+  cidr_block              = "192.168.0.1/17" # Updated CIDR block
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = false
 
@@ -24,7 +24,7 @@ resource "aws_subnet" "my_subnet_1" {
 
 resource "aws_subnet" "my_subnet_2" {
   vpc_id                  = aws_vpc.my_vpc.id
-  cidr_block              = "192.168.128.0/17" # Updated CIDR block
+  cidr_block              = "192.168.128.1/17" # Updated CIDR block
   availability_zone       = "eu-central-1b"
   map_public_ip_on_launch = false
 
