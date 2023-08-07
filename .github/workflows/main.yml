@@ -85,7 +85,7 @@ jobs:
       run : |
         SUBNET_GROUP_NAME=$(aws rds describe-db-subnet-groups --query "DBSubnetGroups[?DBSubnetGroupName=='postgres-subnet-group'].DBSubnetGroupName" --output text)
         if [ "$SUBNET_GROUP_NAME" == "postgres-subnet-group" ]; then
-          terraform import aws_db_subnet_group.my_db_subnet_group postgres-subnet-group
+        terraform import aws_db_subnet_group.example postgres-subnet-group
         fi
     - name: Terraform Apply
       working-directory: terraform
