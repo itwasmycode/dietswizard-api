@@ -99,6 +99,21 @@ jobs:
         if [ "$SUBNET_ID_2" != "None" ] && [ "$SUBNET_ID_2" != "null" ]; then
         terraform import aws_subnet.my_subnet_2 $SUBNET_ID_2
         fi
+    - name: Check if Security Group exists
+      id: check-sg
+      run: |
+        SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=lambda-sg" --query 'SecurityGroups[0].GroupId' --output text)
+        echo "SG_ID=${SG_ID}" >> $GITHUB_ENV
+        if [ "$SG_ID" != "None" ]; then
+          echo "Security Group found: ${SG_ID}"
+        else
+          echo "Security Group not found."
+        fi
+
+    - name: Import Security Group if exists
+      if: env.SG_ID != 'None'
+      run: terraform import aws_security_group.lambda_sg ${{ env.SG_ID }}
+
     - name: Terraform Apply
       working-directory: terraform
       run: terraform apply -auto-approve -var-file=variables.tfvars
