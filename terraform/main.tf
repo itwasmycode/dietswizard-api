@@ -34,7 +34,7 @@ resource "aws_subnet" "my_subnet_2" {
 }
 
 resource "aws_security_group" "public_sg" {
-  name_prefix = "public-sg"
+  name = "public-sg-lambda"
   vpc_id      = aws_vpc.my_vpc.id
 
   ingress {
