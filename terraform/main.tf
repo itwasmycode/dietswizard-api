@@ -76,14 +76,8 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
-data "aws_db_subnet_group" "existing_subnet_group" {
-  name = "postgres-subnet-group" # Change this name to match your existing subnet group name
-}
-
 # Correcting the conditional count for aws_db_subnet_group.example
 resource "aws_db_subnet_group" "example" {
-  count = length(data.aws_db_subnet_group.existing_subnet_group) > 0 ? 0 : 1
-
   name       = "postgres-subnet-group"
   subnet_ids = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
 }
@@ -91,7 +85,6 @@ resource "aws_db_subnet_group" "example" {
 // user, role, policy, user-group, security-group
 resource "aws_iam_role" "lambda_role" {
   name = "lambda-apisubnetgroup"
-  count = var.create_lambda_role ? 1 : 0
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -106,13 +99,8 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-data "aws_iam_policy" "existing_lambda_ec2_policy" {
-  name = "lambda_ec2_policy_test"
-}
 
 resource "aws_iam_policy" "lambda_ec2_policy" {
-  count = length(data.aws_iam_policy.existing_lambda_ec2_policy)> 0 ? 1 : 0
-
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -145,14 +133,67 @@ resource "aws_iam_policy" "lambda_ec2_policy" {
         Effect   = "Allow"
         Action   = "ec2:DeleteNetworkInterface"
         Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ecr:BatchGetImage"
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ecr:GetRepositoryPolicy"
+        Resource = "*"
+      }
+      ,
+      {
+        Effect   = "Allow"
+        Action   = "ecr:SetRepositoryPolicy"
+        Resource = "*"
+      },
+
+      {
+        Effect   = "Allow"
+        Action   = "ecr:InitiateLayerUpload"
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ecr:LambdaECRImageRetrievalPolicy"
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ecr:GetDownloadUrlForLayer"
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ecr:GetAuthorizationToken"
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ecr:BatchGetImage"
+        Resource = "*"
+      },
+
+      {
+        Effect   = "Allow"
+        Action   = "ecr:DescribeImages"
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ecr:DescribeRepositories"
+        Resource = "*"
       }
     ]
   })
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
-  policy_arn = aws_iam_policy.lambda_ec2_policy[0].arn
-  role       = aws_iam_role.lambda_role[0].name
+  policy_arn = aws_iam_policy.lambda_ec2_policy.arn
+  role       = aws_iam_role.lambda_role.name
 }
 
 
@@ -185,8 +226,7 @@ resource "aws_db_instance" "postgresql" {
 
 resource "aws_lambda_function" "example_lambda" {
   function_name = "example-lambda"
-  count         = length(aws_lambda_function.example_lambda)>0 ? 1 : 0
-  role          = aws_iam_role.lambda_role[0].arn
+  role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
@@ -199,5 +239,5 @@ resource "aws_lambda_function" "example_lambda" {
 }
 
 output "rds_endpoint" {
-  value = length(aws_db_instance.postgresql) > 0 ? aws_db_instance.postgresql[0].endpoint : null
+  value = aws_db_instance.postgresql.endpoint
 }
