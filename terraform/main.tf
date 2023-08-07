@@ -13,7 +13,7 @@ resource "aws_vpc" "my_vpc" {
 
 resource "aws_subnet" "my_subnet_1" {
   vpc_id                  = aws_vpc.my_vpc.id
-  cidr_block              = "192.168.2.0/24"
+  cidr_block              = "192.168.10.0/24" # Updated CIDR block
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = false
 
@@ -24,7 +24,7 @@ resource "aws_subnet" "my_subnet_1" {
 
 resource "aws_subnet" "my_subnet_2" {
   vpc_id                  = aws_vpc.my_vpc.id
-  cidr_block              = "192.168.3.0/24"
+  cidr_block              = "192.168.11.0/24" # Updated CIDR block
   availability_zone       = "eu-central-1b"
   map_public_ip_on_launch = false
 
