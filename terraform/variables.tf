@@ -19,5 +19,5 @@ variable "postgre_pw" {
 variable "create_lambda_role" {
   description = "Whether to create the Lambda IAM role"
   type        = bool
-  default     = true
+  default     = false
 }
