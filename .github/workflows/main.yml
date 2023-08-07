@@ -67,7 +67,11 @@ jobs:
     - name: Terraform Init
       working-directory: terraform
       run: terraform init
-
+    - name: Import IAM role if exists
+      run: |  
+        if [ "$ROLE_ARN" != "None" ]; then
+          terraform import aws_iam_role.lambda_role lambda-apisubnetgroup
+        fi
     - name: Terraform Apply
       working-directory: terraform
       run: terraform apply -auto-approve -var-file=variables.tfvars
