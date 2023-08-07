@@ -198,7 +198,7 @@ resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
 
 
 resource "aws_security_group" "lambda_sg" {
-  name_prefix = "lambda-sg-"
+  name_prefix = "lambda-sg"
   vpc_id      = aws_vpc.test_vpc.id
 
   egress {
