@@ -10,14 +10,14 @@ resource "aws_vpc" "my_vpc" {
 resource "aws_subnet" "my_subnet_1" {
   vpc_id                  = aws_vpc.my_vpc.id
   cidr_block              = "10.0.0.0/25"
-  availability_zone       = "us-west-2a"
+  availability_zone       = "eu-central-2a"
   map_public_ip_on_launch = false
 }
 
 resource "aws_subnet" "my_subnet_2" {
   vpc_id                  = aws_vpc.my_vpc.id
   cidr_block              = "10.0.0.128/25"
-  availability_zone       = "us-west-2b"
+  availability_zone       = "eu-central-2b"
   map_public_ip_on_launch = false
 }
 
