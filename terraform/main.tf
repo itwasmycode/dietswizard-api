@@ -221,7 +221,7 @@ resource "aws_db_instance" "postgresql" {
   allocated_storage      = 20
   publicly_accessible    = false
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.example[0].name
+  db_subnet_group_name   = aws_db_subnet_group.example.name
 }
 
 resource "aws_lambda_function" "example_lambda" {
