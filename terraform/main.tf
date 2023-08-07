@@ -7,16 +7,18 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_hostnames = true
 }
 
-resource "aws_subnet" "test_subnet_1" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "eu-central-1a"
+resource "aws_subnet" "my_subnet_1" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.0.0/25"
+  availability_zone       = "us-west-2a"
+  map_public_ip_on_launch = false
 }
 
-resource "aws_subnet" "test_subnet_2" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "eu-central-1b"
+resource "aws_subnet" "my_subnet_2" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.0.128/25"
+  availability_zone       = "us-west-2b"
+  map_public_ip_on_launch = false
 }
 
 resource "aws_security_group" "public_sg" {
