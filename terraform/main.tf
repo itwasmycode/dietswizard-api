@@ -91,7 +91,7 @@ resource "aws_db_subnet_group" "example" {
 // user, role, policy, user-group, security-group
 resource "aws_iam_role" "lambda_role" {
   name = "lambda-apisubnetgroup"
-  count = length(aws_iam_role.lambda_role)> 0 ? 0 :1
+  count = var.create_lambda_role ? 1 : 0
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

@@ -15,3 +15,9 @@ variable "postgre_pw" {
   # You can add an optional default value if needed:
   default = ""
 }
+
+variable "create_lambda_role" {
+  description = "Whether to create the Lambda IAM role"
+  type        = bool
+  default     = true
+}
