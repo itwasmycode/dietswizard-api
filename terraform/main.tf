@@ -234,7 +234,7 @@ resource "aws_lambda_function" "example_lambda" {
   timeout       = 10
 
   vpc_config {
-    subnet_ids         = [aws_subnet.test_subnet_1.id, aws_subnet.test_subnet_2.id]
+    subnet_ids         = [aws_subnet.my_subnet_1.id, aws_subnet.my_subnet_2.id]
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
 }
