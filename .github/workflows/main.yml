@@ -108,7 +108,7 @@ jobs:
     - name: Check if Public Security Group exists
       id: check-public-sg
       run: |
-        PUBLIC_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=public-sg-lambda" --query 'SecurityGroups[0].GroupId' --output text)
+        PUBLIC_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=public_sg" --query 'SecurityGroups[0].GroupId' --output text)
         if [ -n "PUBLIC_SG_ID" ]; then
           echo "PUBLIC_SG_ID=${PUBLIC_SG_ID}" >> $GITHUB_ENV
           echo "Public Security Group found: ${PUBLIC_SG_ID}"
@@ -178,7 +178,7 @@ jobs:
       working-directory: terraform
       run: |
         if [ "$PUBLIC_SG_ID" != "None" ]; then
-          terraform import aws_security_group.public-sg-lambda "$PUBLIC_SG_ID"
+          terraform import aws_security_group.public_sg "$PUBLIC_SG_ID"
         fi
 
     - name: Import RDS Security Group if exists
