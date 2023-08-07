@@ -186,7 +186,7 @@ resource "aws_db_instance" "postgresql" {
 resource "aws_lambda_function" "example_lambda" {
   function_name = "example-lambda"
   count         = length(aws_lambda_function.example_lambda)>0 ? 1 : 0
-  role          = aws_iam_role.lambda_role.arn
+  role          = aws_iam_role.lambda_role[0].arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
