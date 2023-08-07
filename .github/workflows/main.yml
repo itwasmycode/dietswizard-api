@@ -71,20 +71,21 @@ jobs:
     - name: Check if IAM role exists
       id: check-role
       run: |
-          ROLE_ARN=$(aws iam list-roles --query 'Roles[?RoleName==`lambda-apisubnetgroup`].Arn' --output text)
-          if [ -n "$ROLE_ARN" ]; then
-            echo "ROLE_ARN=${ROLE_ARN}" >> $GITHUB_ENV
-            echo "IAM role found: ${ROLE_ARN}"
-          else
-            echo "ROLE_ARN=None" >> $GITHUB_ENV
-            echo "IAM role not found."
-          fi
+        ROLE_ARN=$(aws iam get-role --role-name "lambda-apisubnetgroup" --query 'Role.Arn' --output text)
+        if [ "$ROLE_ARN" != "None" ] && [ -n "$ROLE_ARN" ]; then
+          echo "ROLE_ARN=${ROLE_ARN}" >> $GITHUB_ENV
+          echo "IAM role found: ${ROLE_ARN}"
+        else
+          echo "ROLE_ARN=None" >> $GITHUB_ENV
+          echo "IAM role not found."
+        fi
+
     - name: Import IAM role if exists
       working-directory: terraform
       run: |
         if [ "$ROLE_ARN" != "None" ]; then
-          terraform import aws_iam_role.lambda_role $ROLE_ARN
-        fi
+          terraform import aws_iam_role.lambda_role "$ROLE_ARN"
+        fi    
 
     - name: Import VPC if exists
       working-directory: terraform
