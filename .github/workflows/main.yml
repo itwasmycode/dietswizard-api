@@ -168,8 +168,8 @@ jobs:
     - name: Import Subnets if they exist
       working-directory: terraform
       run: |
-        SUBNET_ID_1=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=cidr,Values=10.0.0.0/25" --query 'Subnets[0].SubnetId' --output text)
-        SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=cidr,Values=10.0.0.128/25" --query 'Subnets[0].SubnetId' --output text)
+        SUBNET_ID_1=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=cidr,Values=192.168.0.0/25" --query 'Subnets[0].SubnetId' --output text)
+        SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=cidr,Values=192.168.0.128/25" --query 'Subnets[0].SubnetId' --output text)
 
         if [ "$SUBNET_ID_1" != "None" ] && [ "$SUBNET_ID_1" != "null" ]; then
         terraform import aws_subnet.my_subnet_1 $SUBNET_ID_1
