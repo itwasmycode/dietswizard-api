@@ -75,7 +75,7 @@ jobs:
       run: |
         ROLE_ARN=$(aws iam list-roles | jq -r '.Roles[] | select(.RoleName=="lambda-apisubnetgroup") | .Arn')
         if [ -n "$ROLE_ARN" ]; then
-        echo "ROLE_ARN=${ROLE_ARN}" >> $GITHUB_ENV
+          echo "ROLE_ARN=${ROLE_ARN}" >> $GITHUB_ENV
           echo "IAM role found: ${ROLE_ARN}"
         else
           echo "ROLE_ARN=None" >> $GITHUB_ENV
@@ -83,9 +83,7 @@ jobs:
         fi
 
 
-
-
-- name: Check if Lambda Security Group exists
+    - name: Check if Lambda Security Group exists
       id: check-lambda-sg
       run: |
         SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=lambda-sg" --query 'SecurityGroups[0].GroupId' --output text)
