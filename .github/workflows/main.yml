@@ -152,7 +152,7 @@ jobs:
       working-directory: terraform
       run: |
         echo $VPC_ID
-        if [ "$VPC_ID" != "None" ]; then
+        if [ "$VPC_ID" != None ]; then
         terraform import aws_vpc.my_vpc ${{ env.VPC_ID }}
         fi
 
