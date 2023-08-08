@@ -145,7 +145,7 @@ jobs:
       run: |
         echo "${ROLE_ARN}"
         if [ "$ROLE_ARN" != "None" ]; then
-          terraform import aws_iam_role.lambda_role lambda-apisubnetgroup
+        terraform import aws_iam_role.lambda_role lambda-apisubnetgroup
         fi    
 
     - name: Import VPC if exists
@@ -153,7 +153,7 @@ jobs:
       run: |
         echo $VPC_ID
         if [ "$VPC_ID" != "None" ]; then
-          terraform import aws_vpc.my_vpc ${{ env.VPC_ID }}
+        terraform import aws_vpc.my_vpc ${{ env.VPC_ID }}
         fi
 
     - name: Import DB Subnet if Exists
@@ -182,21 +182,21 @@ jobs:
       working-directory: terraform
       run: |
         if [ "$APP_SG_ID" != "None" ]; then
-          terraform import aws_security_group.application_sg${{ env.APP_SG_ID }}
+        terraform import aws_security_group.application_sg${{ env.APP_SG_ID }}
         fi
 
     - name: Import Public Security Group if exists
       working-directory: terraform
       run: |
         if [ "$PUBLIC_SG_ID" != "None" ]; then
-          terraform import aws_security_group.public_sg ${{ env.PUBLIC_SG_ID }}
+        terraform import aws_security_group.public_sg ${{ env.PUBLIC_SG_ID }}
         fi
 
     - name: Import RDS Security Group if exists
       working-directory: terraform
       run: |
         if [ "$RDS_SG_ID" != "None" ]; then
-          terraform import aws_security_group.rds_sg ${{ env.RDS_SG_ID }}
+        terraform import aws_security_group.rds_sg ${{ env.RDS_SG_ID }}
         fi
 
     - name: Import Security Group if exists
