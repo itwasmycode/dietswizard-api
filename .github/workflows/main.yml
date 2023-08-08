@@ -58,15 +58,6 @@ jobs:
 
 
 
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name : Change directory
-      run : cd terraform
-    - name : List files
-      run : ls -la
-    - name: Terraform Init
-      working-directory: terraform
-      run: terraform init
 
     - name: Check if VPC exists
       run: |
@@ -139,6 +130,16 @@ jobs:
           echo "APP Security Group not found."
         fi
 
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name : Change directory
+      run : cd terraform
+    - name : List files
+      run : ls -la
+    - name: Terraform Init
+      working-directory: terraform
+      run: terraform init
+
     - name: Import IAM role if exists
       working-directory: terraform
       run: |
@@ -150,6 +151,7 @@ jobs:
     - name: Import VPC if exists
       working-directory: terraform
       run: |
+        echo $VPC_ID
         if [ "$VPC_ID" != "None" ]; then
           terraform import aws_vpc.my_vpc $VPC_ID
         fi
