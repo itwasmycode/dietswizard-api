@@ -66,6 +66,7 @@ jobs:
           echo "VPC exists with ID: $VPC_ID"
           echo "VPC_ID=$VPC_ID" >> $GITHUB_ENV
         else
+          echo "VPC_ID=None" >> $GITHUB_ENV
           echo "VPC with the name 'my_vpc' does not exist"
         fi
 
@@ -152,7 +153,7 @@ jobs:
       working-directory: terraform
       run: |
         echo $VPC_ID
-        if [ "$VPC_ID" != None ]; then
+        if [ "$VPC_ID" != "None" ]; then
         terraform import aws_vpc.my_vpc ${{ env.VPC_ID }}
         fi
 
