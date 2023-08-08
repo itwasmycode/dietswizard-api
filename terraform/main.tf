@@ -325,13 +325,3 @@ resource "aws_db_instance" "postgres_instance" {
   vpc_security_group_ids = [aws_security_group.rds-sgroup.id]
   skip_final_snapshot    = true
 }
-
-resource "postgresql_role" "user_name" {
-  name                = var.postgre_id
-  login               = true
-  password            = var.postgre_pw
-  encrypted_password  = true
-  create_database     = true
-  create_role         = true
-  skip_reassign_owned = true
-}
