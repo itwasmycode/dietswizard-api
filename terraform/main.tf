@@ -285,8 +285,8 @@ resource "aws_lambda_function" "example_lambda" {
   timeout       = 10
 
   vpc_config {
-    subnet_ids         = [aws_subnet.subnet_private_eucentral1a]
-    security_group_ids = [aws_default_security_group.application-test-default-security-group]
+    subnet_ids         = [aws_subnet.subnet_private_eucentral1a.id]
+    security_group_ids = [aws_default_security_group.application-test-default-security-group.id]
   }
 }
 
