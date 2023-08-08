@@ -2,65 +2,203 @@ provider "aws" {
   region = "eu-central-1"  # Replace with your desired region
 }
 
-resource "aws_vpc" "my_vpc" {
-  cidr_block           = "192.168.0.0/24"
-  enable_dns_support   = true
+resource "aws_vpc" "vpc" {
+  cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
+  enable_dns_support   = true
   tags = {
-    Name = "my_vpc"
+    Name = "myapp-vpc-eu-central-1"
   }
 }
 
-resource "aws_subnet" "my_subnet_1" {
-  vpc_id                  = aws_vpc.my_vpc.id
-  cidr_block              = "192.168.0.0/25" # Updated CIDR block
+# Subnets
+# - Public
+resource "aws_subnet" "subnet_public_eucentral1a" {
+  vpc_id                  = aws_vpc.vpc.id
   availability_zone       = "eu-central-1a"
-  map_public_ip_on_launch = false
-
+  cidr_block              = "10.0.0.0/21"
+  map_public_ip_on_launch = true
   tags = {
-    Name = "my_subnet_1"
+    Name = "myapp-subnet-public-eucentral1a"
   }
 }
-
-resource "aws_subnet" "my_subnet_2" {
-  vpc_id                  = aws_vpc.my_vpc.id
-  cidr_block              = "192.168.0.128/25" # Updated CIDR block
+resource "aws_subnet" "subnet_public_eucentral1b" {
+  vpc_id                  = aws_vpc.vpc.id
   availability_zone       = "eu-central-1b"
+  cidr_block              = "10.0.16.0/21"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "myapp-subnet-public-eucentral1b"
+  }
+}
+
+# - Private
+resource "aws_subnet" "subnet_private_eucentral1a" {
+  vpc_id                  = aws_vpc.vpc.id
+  availability_zone       = "eu-central-1a"
+  cidr_block              = "10.0.8.0/21"
   map_public_ip_on_launch = false
+  tags = {
+    Name = "myapp-subnet-private-eucentral1a"
+  }
+}
+resource "aws_subnet" "subnet_private_eucentral1b" {
+  vpc_id                  = aws_vpc.vpc.id
+  availability_zone       = "eu-central-1b"
+  cidr_block              = "10.0.32.0/21"
+  map_public_ip_on_launch = false
+  tags = {
+    Name = "myapp-subnet-private-eucentral1b"
+  }
+}
+
+# Internet gateway
+resource "aws_internet_gateway" "internet_gateway_eucentral1" {
+  vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "my_subnet_2"
+    Name = "myapp-igw-eucentral1"
   }
 }
 
-resource "aws_security_group" "public_sg" {
-  name        = "public-sg-lambda"
-  vpc_id      = aws_vpc.my_vpc.id
+# Routes tables
+# - Public
+resource "aws_route_table" "route_table_public_eucentral1a" {
+  vpc_id = aws_vpc.vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.internet_gateway_eucentral1.id
+  }
+
+  tags = {
+    Name = "myapp-rtb-public-eucentral1a"
+  }
+}
+resource "aws_route_table" "route_table_public_eucentral1b" {
+  vpc_id = aws_vpc.vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.internet_gateway_eucentral1.id
+  }
+
+  tags = {
+    Name = "myapp-rtb-public-eucentral1b"
+  }
+}
+
+# - Private
+resource "aws_route_table" "route_table_private_eucentral1a" {
+  vpc_id = aws_vpc.vpc.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway_eucentral1a.id
+  }
+
+  tags = {
+    Name = "myapp-rtb-private-eucentral1a"
+  }
+}
+resource "aws_route_table" "route_table_private_eucentral1b" {
+  vpc_id = aws_vpc.vpc.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway_eucentral1b.id
+  }
+
+  tags = {
+    Name = "myapp-rtb-private-eucentral1b"
+  }
+}
+
+resource "aws_route_table_association" "route_table_association_public_eucentral1a" {
+  subnet_id      = aws_subnet.subnet_public_eucentral1a.id
+  route_table_id = aws_route_table.route_table_public_eucentral1a.id
+}
+resource "aws_route_table_association" "route_table_association_public_eucentral1b" {
+  subnet_id      = aws_subnet.subnet_public_eucentral1b.id
+  route_table_id = aws_route_table.route_table_public_eucentral1b.id
+}
+
+resource "aws_route_table_association" "route_table_association_private_eucentral1a" {
+  subnet_id      = aws_subnet.subnet_private_eucentral1a.id
+  route_table_id = aws_route_table.route_table_private_eucentral1a.id
+}
+resource "aws_route_table_association" "route_table_association_private_eucentral1b" {
+  subnet_id      = aws_subnet.subnet_private_eucentral1b.id
+  route_table_id = aws_route_table.route_table_private_eucentral1b.id
+}
+
+resource "aws_eip" "eip_eucentral1a" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.internet_gateway_eucentral1]
+  tags = {
+    Name = "myapp-eip-eucentral1a"
+  }
+}
+resource "aws_eip" "eip_eucentral1b" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.internet_gateway_eucentral1]
+  tags = {
+    Name = "myapp-eip-eucentral1b"
+  }
+}
+
+resource "aws_nat_gateway" "nat_gateway_eucentral1a" {
+  allocation_id = aws_eip.eip_eucentral1a.id
+  subnet_id     = aws_subnet.subnet_public_eucentral1a.id
+
+  tags = {
+    Name = "myapp-ngw-eucentral1a"
+  }
+}
+resource "aws_nat_gateway" "nat_gateway_eucentral1b" {
+  allocation_id = aws_eip.eip_eucentral1b.id
+  subnet_id     = aws_subnet.subnet_public_eucentral1b.id
+
+  tags = {
+    Name = "myapp-ngw-eucentral1b"
+  }
+}
+resource "aws_default_network_acl" "default_network_acl" {
+  default_network_acl_id = aws_vpc.vpc.default_network_acl_id
+  subnet_ids             = [aws_subnet.subnet_public_eucentral1a.id, aws_subnet.subnet_private_eucentral1a.id]
 
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    protocol   = -1
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    protocol   = -1
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  tags = {
+    Name = "myapp-default-network-acl"
   }
 }
 
-resource "aws_security_group" "application_sg" {
-  name = "app-sg-lambda"
-  vpc_id      = aws_vpc.my_vpc.id
+
+resource "aws_default_security_group" "default_security_group" {
+  vpc_id = aws_vpc.vpc.id
 
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.5.0/24"]
+    from_port = 0
+    to_port   = 0
+    protocol  = -1
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -69,17 +207,36 @@ resource "aws_security_group" "application_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "myapp-default-sg"
+  }
 }
 
-resource "aws_security_group" "rds_sg" {
-  name = "rds-sg-lambda"
-  vpc_id      = aws_vpc.my_vpc.id
+
+resource "aws_db_subnet_group" "db" {
+  name = "myapp-db-subnet-group"
+
+  subnet_ids = [
+    aws_subnet.subnet_public_eucentral1a.id,
+    aws_subnet.subnet_public_eucentral1b.id,
+    aws_subnet.subnet_private_eucentral1a.id,
+    aws_subnet.subnet_private_eucentral1b.id
+  ]
+
+  tags = {
+    Name = "myapp-db-subnet-group"
+  }
+}
+
+resource "aws_default_security_group" "application-test-default-security-group" {
+  vpc_id = aws_vpc.vpc.id
 
   ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.application_sg.id]
+    protocol  = -1
+    self      = true
+    from_port = 0
+    to_port   = 0
   }
 
   egress {
@@ -87,170 +244,94 @@ resource "aws_security_group" "rds_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    # cidr_blocks = ["127.0.0.1/32"]
+  }
+
+  tags = {
+    Name = "application-test-default-security-group"
   }
 }
 
-# Correcting the conditional count for aws_db_subnet_group.example
-resource "aws_db_subnet_group" "example" {
-  name       = "postgres-subnet-group"
-  subnet_ids = [aws_subnet.my_subnet_1.id, aws_subnet.my_subnet_2.id]
-}
 
-// user, role, policy, user-group, security-group
-resource "aws_iam_role" "lambda_role" {
-  name = "lambda-apisubnetgroup"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-
-resource "aws_iam_policy" "lambda_ec2_policy" {
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "logs:CreateLogGroup"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "logs:CreateLogStream"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "logs:PutLogEvents"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ec2:CreateNetworkInterface"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ec2:DescribeNetworkInterfaces"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ec2:DeleteNetworkInterface"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ecr:BatchGetImage"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ecr:GetRepositoryPolicy"
-        Resource = "*"
-      }
-      ,
-      {
-        Effect   = "Allow"
-        Action   = "ecr:SetRepositoryPolicy"
-        Resource = "*"
-      },
-
-      {
-        Effect   = "Allow"
-        Action   = "ecr:InitiateLayerUpload"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ecr:LambdaECRImageRetrievalPolicy"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ecr:GetDownloadUrlForLayer"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ecr:GetAuthorizationToken"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ecr:BatchGetImage"
-        Resource = "*"
-      },
-
-      {
-        Effect   = "Allow"
-        Action   = "ecr:DescribeImages"
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "ecr:DescribeRepositories"
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
-  policy_arn = aws_iam_policy.lambda_ec2_policy.arn
-  role       = aws_iam_role.lambda_role.name
-}
-
-
-resource "aws_security_group" "lambda_sg" {
-  name = "lambda-sg"
-  vpc_id      = aws_vpc.my_vpc.id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+data "aws_iam_policy_document" "AWSLambdaTrustPolicy" {
+  version = "2012-10-17"
+  statement {
+    actions = ["sts:AssumeRole"]
+    effect  = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
   }
 }
 
-resource "aws_db_instance" "postgresql" {
-
-  identifier             = "example-db"
-  engine                 = "postgres"
-  engine_version         = "15.3"
-  instance_class         = "db.t3.micro"
-  username               = var.postgre_id
-  password               = var.postgre_pw
-  allocated_storage      = 20
-  publicly_accessible    = false
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.example.name
+resource "aws_iam_role" "iam_role" {
+  assume_role_policy = data.aws_iam_policy_document.AWSLambdaTrustPolicy.json
+  name               = "application-test-iam-role-lambda-trigger"
 }
+
+resource "aws_iam_role_policy_attachment" "iam_role_policy_attachment_lambda_vpc_access_execution" {
+  role       = aws_iam_role.iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
 
 resource "aws_lambda_function" "example_lambda" {
   function_name = "example-lambda"
-  role          = aws_iam_role.lambda_role.arn
+  role          = aws_iam_role.iam_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
   timeout       = 10
 
   vpc_config {
-    subnet_ids         = [aws_subnet.my_subnet_1.id, aws_subnet.my_subnet_2.id]
-    security_group_ids = [aws_security_group.lambda_sg.id]
+    subnet_ids         = [aws_subnet.subnet_private_eucentral1a]
+    security_group_ids = [aws_default_security_group.application-test-default-security-group]
   }
 }
 
-output "rds_endpoint" {
-  value = aws_db_instance.postgresql.endpoint
+// POSTGRES
+resource "aws_security_group" "rds-sgroup" {
+  name = "rds-sgroup"
+
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    description = "PostgreSQL"
+    cidr_blocks = ["0.0.0.0/0"] // >
+  }
+
+  ingress {
+    from_port        = 5432
+    to_port          = 5432
+    protocol         = "tcp"
+    description      = "PostgreSQL"
+    ipv6_cidr_blocks = ["::/0"] // >
+  }
+}
+
+resource "aws_db_instance" "postgres_instance" {
+  allocated_storage      = 20
+  storage_type           = "gp2"
+  engine                 = "postgres"
+  engine_version         = "15.3"
+  instance_class         = "db.t3.micro"
+  identifier             = "example-db-test"
+  username               = var.postgre_id
+  password               = var.postgre_pw
+  publicly_accessible    = true
+  parameter_group_name   = "default.postgres15"
+  vpc_security_group_ids = [aws_security_group.rds-sgroup.id]
+  skip_final_snapshot    = true
+}
+
+resource "postgresql_role" "user_name" {
+  name                = var.postgre_id
+  login               = true
+  password            = var.postgre_pw
+  encrypted_password  = true
+  create_database     = true
+  create_role         = true
+  skip_reassign_owned = true
 }
