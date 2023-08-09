@@ -191,29 +191,6 @@ resource "aws_default_network_acl" "default_network_acl" {
 }
 
 
-resource "aws_default_security_group" "default_security_group" {
-  vpc_id = aws_vpc.vpc.id
-
-  ingress {
-    from_port = 0
-    to_port   = 0
-    protocol  = -1
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "myapp-default-sg"
-  }
-}
-
-
 resource "aws_db_subnet_group" "db" {
   name = "myapp-db-subnet-group"
 
@@ -227,6 +204,10 @@ resource "aws_db_subnet_group" "db" {
   tags = {
     Name = "myapp-db-subnet-group"
   }
+}
+
+resource "aws_default_subnet" "def_subnet" {
+  availability_zone = "eu-central-1a"
 }
 
 resource "aws_default_security_group" "application-test-default-security-group" {
@@ -276,8 +257,8 @@ resource "aws_iam_role_policy_attachment" "iam_role_policy_attachment_lambda_vpc
 }
 
 
-resource "aws_lambda_function" "example_lambda" {
-  function_name = "example-lambda"
+resource "aws_lambda_function" "example_lambda_test" {
+  function_name = "example-lambda-test"
   role          = aws_iam_role.iam_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
@@ -323,5 +304,6 @@ resource "aws_db_instance" "postgres_instance" {
   publicly_accessible    = true
   parameter_group_name   = "default.postgres15"
   vpc_security_group_ids = [aws_security_group.rds-sgroup.id]
+  db_subnet_group_name = def_subnet
   skip_final_snapshot    = true
 }
