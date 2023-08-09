@@ -206,9 +206,6 @@ resource "aws_db_subnet_group" "db" {
   }
 }
 
-resource "aws_default_subnet" "def_subnet" {
-  availability_zone = "eu-central-1a"
-}
 
 resource "aws_default_security_group" "application-test-default-security-group" {
   vpc_id = aws_vpc.vpc.id
@@ -304,6 +301,5 @@ resource "aws_db_instance" "postgres_instance" {
   publicly_accessible    = true
   parameter_group_name   = "default.postgres15"
   vpc_security_group_ids = [aws_security_group.rds-sgroup.id]
-  db_subnet_group_name = def_subnet
   skip_final_snapshot    = true
 }
