@@ -53,6 +53,7 @@ resource "aws_subnet" "subnet_private_eucentral1b" {
 }
 
 resource "aws_db_subnet_group" "db" {
+  count = 0
   name = "myapp-db-subnet-group"
 
   subnet_ids = [
@@ -115,6 +116,7 @@ resource "aws_default_security_group" "default_security_group" {
 }
 
 resource "aws_lambda_function" "example_lambda_test" {
+  count = 0
   function_name = "example-lambda-test"
   role          = aws_iam_role.iam_role.arn
   package_type  = "Image"
