@@ -83,6 +83,7 @@ data "aws_iam_policy_document" "AWSLambdaTrustPolicy" {
 }
 
 resource "aws_iam_role" "iam_role" {
+  count = 0
   assume_role_policy = data.aws_iam_policy_document.AWSLambdaTrustPolicy.json
   name               = "application-test-iam-role-lambda-trigger"
 }
@@ -133,6 +134,7 @@ resource "aws_lambda_function" "example_lambda_test" {
 // POSTGRES
 resource "aws_security_group" "rds-sgroup" {
   name = "rds-sgroup"
+  count = 0
 
   ingress {
     from_port   = 5432
