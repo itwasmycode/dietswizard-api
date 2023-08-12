@@ -3,7 +3,6 @@ provider "aws" {
 }
 
 resource "aws_vpc" "vpc" {
-  count = 0
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -23,6 +22,7 @@ resource "aws_subnet" "subnet_public_eucentral1a" {
     Name = "myapp-subnet-public-eucentral1a"
   }
 }
+
 resource "aws_subnet" "subnet_public_eucentral1b" {
   vpc_id                  = aws_vpc.vpc.id
   availability_zone       = "eu-central-1b"
@@ -43,6 +43,7 @@ resource "aws_subnet" "subnet_private_eucentral1a" {
     Name = "myapp-subnet-private-eucentral1a"
   }
 }
+
 resource "aws_subnet" "subnet_private_eucentral1b" {
   vpc_id                  = aws_vpc.vpc.id
   availability_zone       = "eu-central-1b"
