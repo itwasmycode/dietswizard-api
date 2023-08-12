@@ -3,6 +3,7 @@ provider "aws" {
 }
 
 resource "aws_vpc" "vpc" {
+  count = 0
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -52,8 +53,8 @@ resource "aws_subnet" "subnet_private_eucentral1b" {
   }
 }
 
+
 resource "aws_db_subnet_group" "db" {
-  count = 0
   name = "myapp-db-subnet-group"
 
   subnet_ids = [
@@ -83,43 +84,19 @@ data "aws_iam_policy_document" "AWSLambdaTrustPolicy" {
 }
 
 resource "aws_iam_role" "iam_role" {
-  count = 0
   assume_role_policy = data.aws_iam_policy_document.AWSLambdaTrustPolicy.json
   name               = "application-test-iam-role-lambda-trigger"
 }
 
 resource "aws_iam_role_policy_attachment" "iam_role_policy_attachment_lambda_vpc_access_execution" {
-  role       = aws_iam_role.iam_role[0].name
+  role       = aws_iam_role.iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
-resource "aws_default_security_group" "default_security_group" {
-  vpc_id = aws_vpc.vpc.id
-
-  ingress {
-    protocol  = -1
-    self      = true
-    from_port = 0
-    to_port   = 0
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    # cidr_blocks = ["127.0.0.1/32"]
-  }
-
-  tags = {
-    Name = "lambda-default-security-group"
-  }
-}
 
 resource "aws_lambda_function" "example_lambda_test" {
-  count = 0
   function_name = "example-lambda-test"
-  role          = aws_iam_role.iam_role[0].arn
+  role          = aws_iam_role.iam_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
@@ -127,14 +104,13 @@ resource "aws_lambda_function" "example_lambda_test" {
 
   vpc_config {
     subnet_ids         = [aws_subnet.subnet_private_eucentral1a.id]
-    security_group_ids = [aws_default_security_group.default_security_group.id]
+    security_group_ids = [aws_default_security_group]
   }
 }
 
 // POSTGRES
 resource "aws_security_group" "rds-sgroup" {
   name = "rds-sgroup"
-  count = 0
 
   ingress {
     from_port   = 5432
@@ -164,6 +140,6 @@ resource "aws_db_instance" "postgres_instance" {
   password               = var.postgre_pw
   publicly_accessible    = true
   parameter_group_name   = "default.postgres15"
-  vpc_security_group_ids = [aws_security_group.rds-sgroup[0].id]
+  vpc_security_group_ids = [aws_security_group.rds-sgroup.id]
   skip_final_snapshot    = true
 }
