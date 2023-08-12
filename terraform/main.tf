@@ -89,7 +89,7 @@ resource "aws_iam_role" "iam_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "iam_role_policy_attachment_lambda_vpc_access_execution" {
-  role       = aws_iam_role.iam_role.name
+  role       = aws_iam_role.iam_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
@@ -119,7 +119,7 @@ resource "aws_default_security_group" "default_security_group" {
 resource "aws_lambda_function" "example_lambda_test" {
   count = 0
   function_name = "example-lambda-test"
-  role          = aws_iam_role.iam_role.arn
+  role          = aws_iam_role.iam_role[0].arn
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 1024
@@ -164,6 +164,6 @@ resource "aws_db_instance" "postgres_instance" {
   password               = var.postgre_pw
   publicly_accessible    = true
   parameter_group_name   = "default.postgres15"
-  vpc_security_group_ids = [aws_security_group.rds-sgroup.id]
+  vpc_security_group_ids = [aws_security_group.rds-sgroup[0].id]
   skip_final_snapshot    = true
 }
