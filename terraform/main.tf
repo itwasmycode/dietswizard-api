@@ -125,7 +125,7 @@ resource "aws_lambda_function" "example_lambda_test" {
 
   vpc_config {
     subnet_ids         = [aws_subnet.subnet_private_eucentral1a.id]
-    security_group_ids = defaults(aws_security_gro  ups)
+    security_group_ids = [aws_default_security_group.default_security_group.id]
   }
 }
 
