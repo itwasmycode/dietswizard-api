@@ -69,6 +69,15 @@ jobs:
       working-directory: terraform
       run: terraform init
 
+
+    - name: Setup Workspace
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          terraform workspace select production || terraform workspace new production
+        else
+          terraform workspace select staging || terraform workspace new staging
+        fi
+
     - name: Terraform Apply
       working-directory: terraform
       run: terraform apply -auto-approve -var-file=variables.tfvars

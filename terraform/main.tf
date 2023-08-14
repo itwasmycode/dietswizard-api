@@ -2,6 +2,15 @@ provider "aws" {
   region = "eu-central-1"  # Replace with your desired region
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "dietswizard-tfstate-bucket"
+    key            = "states"
+    region         = "eu-central-1"
+    encrypt        = true
+  }
+}
+
 resource "aws_vpc" "vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
@@ -93,7 +102,14 @@ resource "aws_iam_role_policy_attachment" "iam_role_policy_attachment_lambda_vpc
   role       = aws_iam_role.iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
+data "aws_vpc" "default" {
+  default = true
+}
 
+data "aws_security_group" "default" {
+  vpc_id = data.aws_vpc.default.id
+  name   = "default"
+}
 
 resource "aws_lambda_function" "example_lambda_test" {
   function_name = "example-lambda-test"
@@ -105,7 +121,7 @@ resource "aws_lambda_function" "example_lambda_test" {
 
   vpc_config {
     subnet_ids         = [aws_subnet.subnet_private_eucentral1a.id]
-    security_group_ids = [aws_default_security_group]
+    security_group_ids = [data.aws_security_group.default.id]
   }
 }
 
