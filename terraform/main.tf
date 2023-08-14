@@ -102,12 +102,10 @@ resource "aws_iam_role_policy_attachment" "iam_role_policy_attachment_lambda_vpc
   role       = aws_iam_role.iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
-data "aws_vpc" "default" {
-  default = true
-}
+
 
 data "aws_security_group" "default" {
-  vpc_id = data.aws_vpc.default.id
+  vpc_id = aws_vpc.vpc.id
   name   = "default"
 }
 
