@@ -110,7 +110,7 @@ data "aws_security_group" "default" {
 }
 
 resource "aws_lambda_function" "example_lambda_test" {
-  function_name = "example-lambda-test"
+  function_name = "authorizer"
   role          = aws_iam_role.iam_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
@@ -122,6 +122,7 @@ resource "aws_lambda_function" "example_lambda_test" {
     security_group_ids = [data.aws_security_group.default.id]
   }
 }
+
 
 // POSTGRES
 resource "aws_security_group" "rds-sgroup" {
@@ -160,14 +161,14 @@ resource "aws_db_instance" "postgres_instance" {
 }
 
 resource "aws_api_gateway_rest_api" "my_api" {
-  name        = "MyAPI"
-  description = "This is my API for demonstration purposes"
+  name        = "RestAPI"
+  description = "DietswizardAPI"
 }
 
 resource "aws_api_gateway_resource" "my_resource" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
-  path_part   = "myresource"
+  path_part   = "api"
 }
 
 resource "aws_api_gateway_integration" "my_integration" {
@@ -181,7 +182,7 @@ resource "aws_api_gateway_integration" "my_integration" {
 }
 
 resource "aws_api_gateway_authorizer" "my_authorizer" {
-  name                   = "my_authorizer"
+  name                   = "authorizer"
   rest_api_id            = aws_api_gateway_rest_api.my_api.id
   authorizer_uri         = aws_lambda_function.example_lambda_test.invoke_arn
   authorizer_credentials = aws_iam_role.iam_role.arn
@@ -195,4 +196,12 @@ resource "aws_api_gateway_method" "my_method" {
   http_method   = "GET"
   authorization = "CUSTOM"
   authorizer_id = aws_api_gateway_authorizer.my_authorizer.id
+}
+
+resource "aws_api_gateway_deployment" "my_deployment" {
+  depends_on = [aws_api_gateway_integration.my_integration]
+
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  stage_name  = "v1"
+  description = "Deploying my API"
 }
