@@ -158,3 +158,48 @@ resource "aws_db_instance" "postgres_instance" {
   vpc_security_group_ids = [aws_security_group.rds-sgroup.id]
   skip_final_snapshot    = true
 }
+
+resource "aws_api_gateway_rest_api" "my_api" {
+  name        = "MyAPI"
+  description = "This is my API for demonstration purposes"
+}
+
+resource "aws_api_gateway_resource" "my_resource" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
+  path_part   = "myresource"
+}
+
+resource "aws_api_gateway_integration" "my_integration" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.my_resource.id
+  http_method = aws_api_gateway_method.my_method.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.example_lambda_test.invoke_arn
+}
+
+resource "aws_api_gateway_method" "my_method" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.my_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_authorizer" "my_authorizer" {
+  name                   = "my_authorizer"
+  rest_api_id            = aws_api_gateway_rest_api.my_api.id
+  authorizer_uri         = aws_lambda_function.example_lambda_test.invoke_arn
+  authorizer_credentials = aws_iam_role.iam_role.arn
+  type                   = "TOKEN"
+  identity_source        = "method.request.header.Authorization"
+}
+
+resource "aws_api_gateway_method" "my_method" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.my_resource.id
+  http_method   = "GET"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.my_authorizer.id
+}
