@@ -22,7 +22,7 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
     val email = immutableScalaMap.getOrElse("email",null)
     val userId = immutableScalaMap.getOrElse("userId",null)
 
-    val testIt = JwtHandler.createJwtToken(email,userId,"test",jwtIssuer,jwtAudience)
+    val testIt = JwtHandler.createJwtToken(email,userId,"a2d15685-7a71-496d-a55d-39397ae7a89d",jwtIssuer,jwtAudience)
     //email: String, userId: String, secretKey: String, issuer: String, audience: String
     val responseMap: Map[String, JsValue] = Map(
       "status" -> JsString("200"),
