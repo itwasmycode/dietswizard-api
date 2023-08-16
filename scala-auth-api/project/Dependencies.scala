@@ -7,5 +7,4 @@ object Dependencies {
   lazy val jwt = "com.nimbusds" % "nimbus-jose-jwt" % "9.12"
   lazy val xmlBind= "javax.xml.bind" % "jaxb-api" % "2.3.1"
   lazy val jackson= "com.fasterxml.jackson.core" % "jackson-annotations" % "2.15.2"
-
 }

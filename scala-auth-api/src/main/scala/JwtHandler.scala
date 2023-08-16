@@ -1,3 +1,8 @@
+import com.nimbusds.jose._
+import com.nimbusds.jose.crypto._
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
+
 object JwtHandler {
   def createJwtToken(email: String, userId: String, secretKey: String, issuer: String, audience: String): scala.collection.immutable.Map[String, String] = {
     val now = new Date()

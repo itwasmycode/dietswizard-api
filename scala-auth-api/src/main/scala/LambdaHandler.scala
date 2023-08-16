@@ -1,10 +1,7 @@
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 
-import com.nimbusds.jose._
-import com.nimbusds.jose.crypto._
-import com.nimbusds.jwt.JWTClaimsSet
-import com.nimbusds.jwt.SignedJWT
+
 
 import play.api.libs.json._
 
