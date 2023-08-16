@@ -1,5 +1,5 @@
-
 object TestPurpose {
-  def printSmt() =
-    println("smt has called?")
+  def printSmt(): Unit = {
+    println("Something from TestPurpose!")
+  }
 }
