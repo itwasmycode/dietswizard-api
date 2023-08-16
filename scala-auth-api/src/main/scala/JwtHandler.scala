@@ -19,7 +19,6 @@ object JwtHandler {
       .issuer(issuer)
       .audience(audience)
       .issueTime(now)
-      .jwtID(jwtId)
       .claim("email", email)
       .claim("userId",userId)
       .expirationTime(new java.util.Date(accessTokenExpiration))
