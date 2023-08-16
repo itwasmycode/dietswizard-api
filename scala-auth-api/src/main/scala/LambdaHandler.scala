@@ -14,6 +14,7 @@ import java.time.Instant
 import java.time.{Instant, ZoneOffset}
 import scala.collection.JavaConverters._
 
+import smt.TestingPurpose
 
 
 class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
@@ -22,6 +23,7 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
     val scalaMap: scala.collection.mutable.Map[String, String] = event.asScala
     val immutableScalaMap: scala.collection.immutable.Map[String, String] = scalaMap.toMap
     val jwtIssuer = immutableScalaMap.getOrElse("origin","dietswizard")
+
     // Replace with your desired issuer
     val jwtAudience = immutableScalaMap.getOrElse("origin","dietswizard")
 
@@ -58,7 +60,7 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
       "access_token" -> JsString("abc"),
       "refresh_token" -> JsString("123")
     )
-
+    println(TestingPurpose.printSmt)
     val jsonResponse: String = Json.stringify(Json.toJson(responseMap))
     jsonResponse
 
