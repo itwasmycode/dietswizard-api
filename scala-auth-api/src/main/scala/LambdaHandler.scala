@@ -61,7 +61,7 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
       "access_token" -> JsString("abc"),
       "refresh_token" -> JsString("123")
     )
-    println(TestingPurpose.printSmt)
+    printSmt
     val jsonResponse: String = Json.stringify(Json.toJson(responseMap))
     jsonResponse
 
