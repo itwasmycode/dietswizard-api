@@ -6,10 +6,7 @@ import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import play.api.libs.json._
 
 import java.util.{ Map => JavaMap }
-import java.util.UUID
-import java.util.Date
-import java.time.Instant
-import java.time.{Instant, ZoneOffset}
+
 import scala.collection.JavaConverters._
 
 

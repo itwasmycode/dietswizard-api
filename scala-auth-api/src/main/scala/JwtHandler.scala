@@ -1,3 +1,8 @@
+import java.util.UUID
+import java.util.Date
+import java.time.Instant
+import java.time.{Instant, ZoneOffset}
+
 import com.nimbusds.jose._
 import com.nimbusds.jose.crypto._
 import com.nimbusds.jwt.JWTClaimsSet
@@ -11,8 +16,8 @@ object JwtHandler {
     val accessTokenExpiration = now.getTime + accessTokenExpirationMinutes * 60 * 1000
     val claimsSet = new JWTClaimsSet.Builder()
       .subject("auth")
-      .issuer(jwtIssuer)
-      .audience(jwtAudience)
+      .issuer(issuer)
+      .audience(audience)
       .issueTime(now)
       .jwtID(jwtId)
       .claim("email", email)
