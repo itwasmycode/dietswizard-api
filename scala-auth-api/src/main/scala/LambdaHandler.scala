@@ -1,3 +1,5 @@
+package LambdaPackage
+
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 
 import com.nimbusds.jose._
@@ -14,8 +16,7 @@ import java.time.Instant
 import java.time.{Instant, ZoneOffset}
 import scala.collection.JavaConverters._
 
-import smt.TestingPurpose
-
+import LambdaPackage.smt.TestPurpose
 
 class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
   override def handleRequest(event: JavaMap[String, String], context: Context): String = {
