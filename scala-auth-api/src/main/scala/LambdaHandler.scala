@@ -25,41 +25,18 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], String] {
 
     // Replace with your desired issuer
     val jwtAudience = immutableScalaMap.getOrElse("origin","dietswizard")
+    val email = immutableScalaMap.getOrElse("email",null)
+    val userId = immutableScalaMap.getOrElse("userId",null)
 
-    def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): scala.collection.immutable.Map[String,String] = {
-      val now = new Date()
-      val jwtId = java.util.UUID.randomUUID().toString
-      val accessTokenExpirationMinutes = 15
-      val accessTokenExpiration = now.getTime + accessTokenExpirationMinutes * 60 * 1000
-      val claimsSet = new JWTClaimsSet.Builder()
-        .subject("auth")
-        .issuer(jwtIssuer)
-        .audience(jwtAudience)
-        .issueTime(now)
-        .jwtID(jwtId)
-        .claim("email", email)
-        .expirationTime(new java.util.Date(accessTokenExpiration))
-        .build()
-
-      val jwsHeader = new JWSHeader(JWSAlgorithm.HS256)
-      val signedJWT = new SignedJWT(jwsHeader, claimsSet)
-
-      // Create a HMAC signer with the secret key
-      val signer = new MACSigner(secretKey.getBytes)
-
-      // Sign the JWT token
-      signedJWT.sign(signer)
-
-      // Serialize the JWT token to a compact string
-      Map("access_token" -> signedJWT.serialize(), "refresh_token" -> jwtId)
-    }
-
+    val testIt = JwtHandler.createJwtToken(email,userId,"test",jwtIssuer,jwtAudience)
+    //email: String, userId: String, secretKey: String, issuer: String, audience: String
     val responseMap: Map[String, JsValue] = Map(
       "status" -> JsString("200"),
       "access_token" -> JsString("abc"),
       "refresh_token" -> JsString("123")
     )
-    TestPurpose.printSmt()
+
+    println(testIt)
     val jsonResponse: String = Json.stringify(Json.toJson(responseMap))
     jsonResponse
 
