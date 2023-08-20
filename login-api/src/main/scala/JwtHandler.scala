@@ -7,13 +7,12 @@ import com.nimbusds.jose._
 import com.nimbusds.jose.crypto._
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import com.nimbusds.jwt._
+
+import scala.util.{Try, Success, Failure}
 
 object JwtHandler {
-  import com.nimbusds.jose._
-  import com.nimbusds.jose.crypto._
-  import com.nimbusds.jwt._
-  import scala.util.{Try, Success, Failure}
-  import java.util.Date
+
 
   def createJwtToken(email: String, userId: String, secretKey: String, issuer: String, audience: String): Try[String] = {
     (for {

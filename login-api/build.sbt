@@ -7,13 +7,16 @@ ThisBuild / organizationName := ""
 
 lazy val root = (project in file("."))
   .settings(
-    name := "scala-auth-api",
+    name := "login-api",
     libraryDependencies ++= Seq(
       lambdaRuntimeInterfaceClient,
       scalaTest % Test,
       playJson,
       jwt,
-      jackson
+      jackson,
+      slick,
+      postgresql,
+      secretManager
     ),
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.15.2",
