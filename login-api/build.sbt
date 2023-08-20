@@ -16,7 +16,11 @@ lazy val root = (project in file("."))
       jackson,
       slick,
       postgresql,
-      secretManager
+      secretManager,
+      bcrypt,
+      logging,
+      loggingforj,
+      awsjavasdk
     ),
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.15.2",

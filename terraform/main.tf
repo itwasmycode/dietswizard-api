@@ -1,13 +1,13 @@
 provider "aws" {
-  region = "eu-central-1"  # Replace with your desired region
+  region = "eu-central-1" # Replace with your desired region
 }
 
 terraform {
   backend "s3" {
-    bucket         = "dietswizard-tfstate-bucket"
-    key            = "states"
-    region         = "eu-central-1"
-    encrypt        = true
+    bucket  = "dietswizard-tfstate-bucket"
+    key     = "states"
+    region  = "eu-central-1"
+    encrypt = true
   }
 }
 
@@ -63,13 +63,10 @@ resource "aws_subnet" "subnet_private_eucentral1b" {
   }
 }
 
-
 resource "aws_db_subnet_group" "db" {
   name = "myapp-db-subnet-group"
 
   subnet_ids = [
-    aws_subnet.subnet_public_eucentral1a.id,
-    aws_subnet.subnet_public_eucentral1b.id,
     aws_subnet.subnet_private_eucentral1a.id,
     aws_subnet.subnet_private_eucentral1b.id
   ]
@@ -79,6 +76,31 @@ resource "aws_db_subnet_group" "db" {
   }
 }
 
+resource "aws_internet_gateway" "my_gateway" {
+  vpc_id = aws_vpc.vpc.id
+}
+resource "aws_route_table" "public_route_table" {
+  vpc_id = aws_vpc.vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.my_gateway.id
+  }
+
+  tags = {
+    Name = "myapp-public-route-table"
+  }
+}
+
+resource "aws_route_table_association" "public_subnet_a" {
+  subnet_id      = aws_subnet.subnet_public_eucentral1a.id
+  route_table_id = aws_route_table.public_route_table.id
+}
+
+resource "aws_route_table_association" "public_subnet_b" {
+  subnet_id      = aws_subnet.subnet_public_eucentral1b.id
+  route_table_id = aws_route_table.public_route_table.id
+}
 
 
 data "aws_iam_policy_document" "AWSLambdaTrustPolicy" {
@@ -93,16 +115,35 @@ data "aws_iam_policy_document" "AWSLambdaTrustPolicy" {
   }
 }
 
+data "aws_iam_policy_document" "lambda_secrets_manager_policy" {
+  statement {
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = ["arn:aws:secretsmanager:eu-central-1:021114833428:secret:dietswizard-db-prod"]
+    effect    = "Allow"
+  }
+}
+
 resource "aws_iam_role" "iam_role" {
   assume_role_policy = data.aws_iam_policy_document.AWSLambdaTrustPolicy.json
   name               = "application-test-iam-role-lambda-trigger"
 }
+resource "aws_iam_policy" "lambda_secrets_manager_policy" {
+  name        = "lambda_secrets_manager_policy"
+  path        = "/"
+  description = "Allows Lambda functions to call GetSecretValue on the specified secret."
+  policy      = data.aws_iam_policy_document.lambda_secrets_manager_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_secrets_manager_policy_attachment" {
+  role       = aws_iam_role.iam_role.name
+  policy_arn = aws_iam_policy.lambda_secrets_manager_policy.arn
+}
+
 
 resource "aws_iam_role_policy_attachment" "iam_role_policy_attachment_lambda_vpc_access_execution" {
   role       = aws_iam_role.iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
-
 
 data "aws_security_group" "default" {
   vpc_id = aws_vpc.vpc.id
@@ -115,36 +156,33 @@ resource "aws_lambda_function" "login_lambda" {
   package_type  = "Image"
   image_uri     = var.image_uri
   memory_size   = 2048
-  timeout       = 10
+  timeout       = 20
 
   vpc_config {
-    subnet_ids         = [aws_subnet.subnet_private_eucentral1a.id]
+    subnet_ids = [
+      aws_subnet.subnet_private_eucentral1a.id,
+      aws_subnet.subnet_private_eucentral1b.id
+    ]
     security_group_ids = [data.aws_security_group.default.id]
   }
 }
 
-
-// POSTGRES
+# RDS Security Group
 resource "aws_security_group" "rds-sgroup" {
-  name = "rds-sgroup"
+  vpc_id = aws_vpc.vpc.id # specify the VPC
+  name   = "rds-sgroup"
 
   ingress {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    description = "PostgreSQL"
-    cidr_blocks = ["0.0.0.0/0"] // >
-  }
-
-  ingress {
-    from_port        = 5432
-    to_port          = 5432
-    protocol         = "tcp"
-    description      = "PostgreSQL"
-    ipv6_cidr_blocks = ["::/0"] // >
+    description = "PostgreSQL from Lambda"
+    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [data.aws_security_group.default.id] # reference the Lambda's security group
   }
 }
 
+# RDS Instance
 resource "aws_db_instance" "postgres_instance" {
   allocated_storage      = 20
   storage_type           = "gp2"
@@ -154,11 +192,16 @@ resource "aws_db_instance" "postgres_instance" {
   identifier             = var.branch_name == "main" ? "dietswizard-db-prod" : "dietswizard-db-dev"
   username               = var.postgre_id
   password               = var.postgre_pw
-  publicly_accessible    = true
   parameter_group_name   = "default.postgres15"
   vpc_security_group_ids = [aws_security_group.rds-sgroup.id]
+  db_subnet_group_name   = aws_db_subnet_group.db.name # reference the DB subnet group
   skip_final_snapshot    = true
+  depends_on             = [aws_internet_gateway.my_gateway]
+  publicly_accessible    = true
 }
+
+# Rest of the API Gateway resources remain unchanged
+
 
 resource "aws_api_gateway_rest_api" "my_api" {
   name        = var.branch_name == "main" ? "dietswizard-restAPI-prod" : "dietswizard-restAPI-dev"

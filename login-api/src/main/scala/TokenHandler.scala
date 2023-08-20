@@ -1,23 +1,20 @@
+import scala.util.{Try, Success, Failure}
+
 import java.util.UUID
 import java.util.Date
 import java.time.Instant
 import java.time.{Instant, ZoneOffset}
 
-import com.nimbusds.jose._
-import com.nimbusds.jose.crypto._
+import com.nimbusds.jose.{JWSAlgorithm, JWSHeader, Payload}
+import com.nimbusds.jose.crypto.DirectEncrypter
+import com.nimbusds.jose.crypto.MACSigner
+import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
 import com.nimbusds.jwt.JWTClaimsSet
-import com.nimbusds.jwt.SignedJWT
-import com.nimbusds.jwt._
 
-import scala.util.{Try, Success, Failure}
-
-object JwtHandler {
-
-
-  def createJwtToken(email: String, userId: String, secretKey: String, issuer: String, audience: String): Try[String] = {
+object TokenHandler {
+  def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): Try[String] = {
     (for {
       now <- Try(new Date())
-      jwtId = java.util.UUID.randomUUID().toString
       accessTokenExpirationMinutes = 15
       accessTokenExpiration = now.getTime + accessTokenExpirationMinutes * 60 * 1000
       claimsSet <- Try(
@@ -27,7 +24,6 @@ object JwtHandler {
           .audience(audience)
           .issueTime(now)
           .claim("email", email)
-          .claim("userId", userId)
           .expirationTime(new java.util.Date(accessTokenExpiration))
           .build()
       )
@@ -39,4 +35,3 @@ object JwtHandler {
       ).orElse(Failure(new Exception("JWT creation failed")))
   }
 }
-
