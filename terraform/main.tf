@@ -114,7 +114,7 @@ resource "aws_lambda_function" "login_lambda" {
   role          = aws_iam_role.iam_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
-  memory_size   = 1024
+  memory_size   = 2048
   timeout       = 10
 
   vpc_config {
