@@ -21,3 +21,8 @@ variable "create_lambda_role" {
   type        = bool
   default     = false
 }
+
+variable "branch_name" {
+  description = "The name of the Git branch"
+  type        = string
+}

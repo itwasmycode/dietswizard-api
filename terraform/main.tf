@@ -109,8 +109,8 @@ data "aws_security_group" "default" {
   name   = "default"
 }
 
-resource "aws_lambda_function" "example_lambda_test" {
-  function_name = "authorizer"
+resource "aws_lambda_function" "login_lambda" {
+  function_name = var.branch_name == "main" ? "login-prod" : "login-dev"
   role          = aws_iam_role.iam_role.arn
   package_type  = "Image"
   image_uri     = var.image_uri
@@ -151,7 +151,7 @@ resource "aws_db_instance" "postgres_instance" {
   engine                 = "postgres"
   engine_version         = "15.3"
   instance_class         = "db.t3.micro"
-  identifier             = "example-db-test"
+  identifier             = var.branch_name == "main" ? "dietswizard-db-prod" : "dietswizard-db-dev"
   username               = var.postgre_id
   password               = var.postgre_pw
   publicly_accessible    = true
@@ -161,14 +161,14 @@ resource "aws_db_instance" "postgres_instance" {
 }
 
 resource "aws_api_gateway_rest_api" "my_api" {
-  name        = "RestAPI"
+  name        = var.branch_name == "main" ? "dietswizard-restAPI-prod" : "dietswizard-restAPI-dev"
   description = "DietswizardAPI"
 }
 
 resource "aws_api_gateway_resource" "my_resource" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
-  path_part   = "api"
+  path_part   = "auth"
 }
 
 resource "aws_api_gateway_integration" "my_integration" {
@@ -178,16 +178,16 @@ resource "aws_api_gateway_integration" "my_integration" {
 
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = aws_lambda_function.example_lambda_test.invoke_arn
+  uri                     = aws_lambda_function.login_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_authorizer" "my_authorizer" {
   name                   = "authorizer"
   rest_api_id            = aws_api_gateway_rest_api.my_api.id
-  authorizer_uri         = aws_lambda_function.example_lambda_test.invoke_arn
+  authorizer_uri         = aws_lambda_function.login_lambda.invoke_arn
   authorizer_credentials = aws_iam_role.iam_role.arn
   type                   = "TOKEN"
-  identity_source        = "method.request.header.Authorization"
+  identity_source        = "method.request.header.authorizationToken"
 }
 
 resource "aws_api_gateway_method" "my_method" {
@@ -202,6 +202,6 @@ resource "aws_api_gateway_deployment" "my_deployment" {
   depends_on = [aws_api_gateway_integration.my_integration]
 
   rest_api_id = aws_api_gateway_rest_api.my_api.id
-  stage_name  = "v1"
+  stage_name  = var.branch_name == "main" ? "prod" : "dev"
   description = "Deploying my API"
 }
