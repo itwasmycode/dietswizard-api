@@ -36,8 +36,8 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         cd ${{ matrix.project }}
-        docker build -t $ECR_REGISTRY/${{ matrix.project }}:${{ github.sha }} .
-        docker push $ECR_REGISTRY/${{ matrix.project }}:${{ github.sha }}
+        docker build -t $ECR_REGISTRY/${{ matrix.project }}:latest .
+        docker push $ECR_REGISTRY/${{ matrix.project }}:latest
 
     - name: Move to terraform  directory
       run: cd terraform

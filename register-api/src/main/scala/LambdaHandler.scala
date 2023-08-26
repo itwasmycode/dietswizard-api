@@ -7,7 +7,7 @@ import scala.util.{Try, Success, Failure}
 import play.api.libs.json._
 import slick.jdbc.PostgresProfile.api._
 import java.util.UUID
-import org.mindrot.jbcrypt.BCrypt
+import at.favre.lib.crypto.bcrypt._
 
 class LambdaHandler() extends RequestHandler[JavaMap[String, String], JavaMap[String, String]] {
 
@@ -35,7 +35,7 @@ class LambdaHandler() extends RequestHandler[JavaMap[String, String], JavaMap[St
             }
           case Left(_) =>
             val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray)
-            val newUser = User(UUID.randomUUID().toString, email, hashedPassword)
+            val newUser = DatabaseHandler.User(UUID.randomUUID().toString, email, hashedPassword)
             Await.result(DatabaseHandler.createUser(newUser)(db, ec), Duration.Inf) match {
               case Right(_) =>
                 new JavaHashMap[String, String] {

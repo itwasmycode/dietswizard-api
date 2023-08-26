@@ -1,4 +1,10 @@
-variable "image_uri" {
+variable "login_image_uri" {
+  type = string
+  # You can add an optional default value if needed:
+  default = ""
+}
+
+variable "register_image_uri" {
   type = string
   # You can add an optional default value if needed:
   default = ""

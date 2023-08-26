@@ -154,7 +154,7 @@ resource "aws_lambda_function" "login_lambda" {
   function_name = var.branch_name == "main" ? "login-prod" : "login-dev"
   role          = aws_iam_role.iam_role.arn
   package_type  = "Image"
-  image_uri     = var.image_uri
+  image_uri     = var.login_image_uri
   memory_size   = 2048
   timeout       = 20
 
@@ -166,6 +166,24 @@ resource "aws_lambda_function" "login_lambda" {
     security_group_ids = [data.aws_security_group.default.id]
   }
 }
+
+resource "aws_lambda_function" "register_lambda" {
+  function_name = var.branch_name == "main" ? "register-prod" : "register-dev"
+  role          = aws_iam_role.iam_role.arn
+  package_type  = "Image"
+  image_uri     = var.register_image_uri
+  memory_size   = 2048
+  timeout       = 20
+
+  vpc_config {
+    subnet_ids = [
+      aws_subnet.subnet_private_eucentral1a.id,
+      aws_subnet.subnet_private_eucentral1b.id
+    ]
+    security_group_ids = [data.aws_security_group.default.id]
+  }
+}
+
 
 # RDS Security Group
 resource "aws_security_group" "rds-sgroup" {
@@ -214,14 +232,17 @@ resource "aws_api_gateway_resource" "my_resource" {
   path_part   = "auth"
 }
 
-resource "aws_api_gateway_integration" "my_integration" {
+resource "aws_api_gateway_resource" "register_resource" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
-  resource_id = aws_api_gateway_resource.my_resource.id
-  http_method = aws_api_gateway_method.my_method.http_method
+  parent_id   = aws_api_gateway_resource.my_resource.id
+  path_part   = "register"
+}
 
-  type                    = "AWS_PROXY"
-  integration_http_method = "POST"
-  uri                     = aws_lambda_function.login_lambda.invoke_arn
+resource "aws_api_gateway_method" "register_method" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.register_resource.id
+  http_method   = "POST"
+  authorization = "None"
 }
 
 resource "aws_api_gateway_authorizer" "my_authorizer" {
@@ -233,18 +254,59 @@ resource "aws_api_gateway_authorizer" "my_authorizer" {
   identity_source        = "method.request.header.authorizationToken"
 }
 
-resource "aws_api_gateway_method" "my_method" {
-  rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.my_resource.id
-  http_method   = "GET"
-  authorization = "CUSTOM"
-  authorizer_id = aws_api_gateway_authorizer.my_authorizer.id
-}
 
 resource "aws_api_gateway_deployment" "my_deployment" {
-  depends_on = [aws_api_gateway_integration.my_integration]
+  depends_on = [
+    aws_api_gateway_integration.register_integration,
+    aws_api_gateway_method.register_method,
+  ]
 
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = var.branch_name == "main" ? "prod" : "dev"
   description = "Deploying my API"
+}
+
+
+resource "aws_api_gateway_integration" "register_integration" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.register_resource.id
+  http_method = aws_api_gateway_method.register_method.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.register_lambda.invoke_arn
+}
+
+data "aws_iam_policy_document" "api_gateway_invoke" {
+  statement {
+    actions   = ["execute-api:Invoke"]
+    resources = ["arn:aws:execute-api:eu-central-1:021114833428:*"]
+    effect    = "Allow"
+  }
+}
+
+resource "aws_iam_policy" "api_gateway_invoke_policy" {
+  name        = "APIGatewayInvokePolicy"
+  path        = "/"
+  description = "Allows the Lambda function to be invoked by the API Gateway"
+  policy      = data.aws_iam_policy_document.api_gateway_invoke.json
+}
+
+resource "aws_iam_role_policy_attachment" "api_gateway_invoke_policy_attachment" {
+  role       = aws_iam_role.iam_role.name
+  policy_arn = aws_iam_policy.api_gateway_invoke_policy.arn
+}
+
+resource "aws_lambda_permission" "apigw_register_lambda_permission" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.register_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+}
+
+resource "aws_lambda_permission" "apigw_login_lambda_permission" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.login_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
 }
