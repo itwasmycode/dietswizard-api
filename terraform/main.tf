@@ -245,20 +245,26 @@ resource "aws_api_gateway_method" "register_method" {
   authorization = "None"
 }
 
-resource "aws_api_gateway_authorizer" "my_authorizer" {
-  name                   = "authorizer"
-  rest_api_id            = aws_api_gateway_rest_api.my_api.id
-  authorizer_uri         = aws_lambda_function.login_lambda.invoke_arn
-  authorizer_credentials = aws_iam_role.iam_role.arn
-  type                   = "TOKEN"
-  identity_source        = "method.request.header.authorizationToken"
+
+resource "aws_api_gateway_resource" "login_resource" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_resource.my_resource.id
+  path_part   = "login"
 }
 
+resource "aws_api_gateway_method" "login_method" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.login_resource.id
+  http_method   = "POST"
+  authorization = "None"
+}
 
 resource "aws_api_gateway_deployment" "my_deployment" {
   depends_on = [
     aws_api_gateway_integration.register_integration,
     aws_api_gateway_method.register_method,
+    aws_api_gateway_integration.login_integration,
+    aws_api_gateway_method.login_method
   ]
 
   rest_api_id = aws_api_gateway_rest_api.my_api.id
@@ -275,6 +281,16 @@ resource "aws_api_gateway_integration" "register_integration" {
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
   uri                     = aws_lambda_function.register_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "login_integration" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.login_resource.id
+  http_method = aws_api_gateway_method.login_method.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.login_lambda.invoke_arn
 }
 
 data "aws_iam_policy_document" "api_gateway_invoke" {

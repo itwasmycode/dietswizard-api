@@ -5,7 +5,6 @@ on:
     branches:
       - main
 
-
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -17,68 +16,75 @@ jobs:
           - register-api
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build and push Docker image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      run: |
-        cd ${{ matrix.project }}
-        docker build -t $ECR_REGISTRY/${{ matrix.project }}:latest .
-        docker push $ECR_REGISTRY/${{ matrix.project }}:latest
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          cd ${{ matrix.project }}
+          docker build -t $ECR_REGISTRY/${{ matrix.project }}:latest .
+          docker push $ECR_REGISTRY/${{ matrix.project }}:latest
 
-    - name: Move to terraform  directory
-      run: cd terraform
+  terraform:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-    - name: Download Terraform
-      run: |
-        curl -LO "https://releases.hashicorp.com/terraform/1.0.9/terraform_1.0.9_linux_amd64.zip"
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Unzip Terraform
-      run: |
-        mkdir terraform_temp
-        unzip terraform_1.0.9_linux_amd64.zip -d terraform_temp
-        chmod +x terraform_temp/terraform
-        sudo mv terraform_temp/terraform /usr/local/bin/
+      - name: Move to terraform directory
+        run: cd terraform
 
-    - name: Clean up
-      run: |
-        rm -rf terraform_temp
+      - name: Download Terraform
+        run: |
+          curl -LO "https://releases.hashicorp.com/terraform/1.0.9/terraform_1.0.9_linux_amd64.zip"
+      - name: Unzip Terraform
+        run: |
+          mkdir terraform_temp
+          unzip terraform_1.0.9_linux_amd64.zip -d terraform_temp
+          chmod +x terraform_temp/terraform
+          sudo mv terraform_temp/terraform /usr/local/bin/
+      - name: Clean up
+        run: |
+          rm -rf terraform_temp
 
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name : Change directory
+        run : cd terraform
 
-    - name : Change directory
-      run : cd terraform
+      - name : List files
+        run : ls -la
 
-    - name : List files
-      run : ls -la
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
 
-    - name: Terraform Init
-      working-directory: terraform
-      run: terraform init
-
-
-    - name: Setup Workspace
-      run: |
-        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          terraform workspace select production || terraform workspace new production
-        else
-          terraform workspace select staging || terraform workspace new staging
-        fi
-
-    - name: Terraform Apply
-      working-directory: terraform
-      run: terraform apply -auto-approve -var-file=variables.tfvars -var "branch_name=${{ github.ref_name }}"
+      - name: Setup Workspace
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            terraform workspace select production || terraform workspace new production
+          else
+            terraform workspace select staging || terraform workspace new staging
+          fi
+      - name: Terraform Apply
+        working-directory: terraform
+        run: terraform apply -auto-approve -var-file=variables.tfvars -var "branch_name=${{ github.ref_name }}"

@@ -1,4 +1,4 @@
-import play.api.libs.json._
+import play.api.libs.json.{Json,JsValue}
 import scala.util.Try
 
 object DatabaseConfig {

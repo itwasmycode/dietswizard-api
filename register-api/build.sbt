@@ -20,7 +20,13 @@ lazy val root = (project in file("."))
       bcrypt,
       logging,
       loggingforj,
-      awsjavasdk
+      awsjavasdk,
+      jacksonScala,
+      lambdaJavaCore,
+      lambdaJavaEvents,
+      circeCore,
+      circeGeneric,
+      circeParser
     ),
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.15.2",
