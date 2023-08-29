@@ -83,7 +83,5 @@ object Handler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProx
     val responseEvent = new APIGatewayProxyResponseEvent()
     responseEvent.setStatusCode(200)
     responseEvent.setBody(decodedString)
-
-    objectMapper.writeValue(output, responseEvent)
   }
 }
