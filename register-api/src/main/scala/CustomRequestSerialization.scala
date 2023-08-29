@@ -1,7 +1,7 @@
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
-case class Request(
+case class CustomRequest(
                    body: String,
                    resource: String,
                    path: String,
