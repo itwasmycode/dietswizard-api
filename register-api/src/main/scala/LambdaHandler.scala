@@ -1,14 +1,16 @@
-import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
+import com.amazonaws.services.lambda.runtime.{Context}
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
-import java.io.{InputStream, OutputStream,OutputStreamWriter}
-import java.nio.charset.StandardCharsets
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
+
+import scala.collection.JavaConverters._
+import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+
 import java.util.{Base64, Map => JavaMap, HashMap => JavaHashMap}
 import org.slf4j.LoggerFactory
 import scala.concurrent.{ExecutionContext, Future,Await}
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import play.api.libs.json._
+
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
@@ -16,32 +18,17 @@ import scala.util.{Try, Success, Failure}
 import slick.jdbc.PostgresProfile.api._
 import java.util.UUID
 import at.favre.lib.crypto.bcrypt._
-import play.api.libs.json.Json
 
 
-object Handler extends RequestStreamHandler {
 
-
+object Handler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
-  val objectMapper = new ObjectMapper()
 
-
-  override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
-    val requestEvent = objectMapper.readValue(input, classOf[APIGatewayProxyRequestEvent])
-
-    val body = requestEvent.getBody
-    val isBase64Encoded = requestEvent.getIsBase64Encoded
-
-    val decodedBytes = if (isBase64Encoded) {
-      Base64.getDecoder.decode(body)
-    } else {
-      body.getBytes(StandardCharsets.UTF_8)
-    }
-
-    val decodedString = new String(decodedBytes, StandardCharsets.UTF_8)
-
-    logger.info("Decoded string: {}", decodedString)
+  override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
+    logger.info(input)
+    val requestBody = Json.parse(input.getBody)
+    val request = requestBody.as[CustomRequestSerialization] // Decode request using Play JSON
     /*
     request match {
       case Some(req) =>
