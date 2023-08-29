@@ -24,7 +24,7 @@ object Handler extends RequestStreamHandler {
   implicit val ec = ExecutionContext.global
 
 
-  override def handleRequest(input: InputStream, output: OutputStream, context: Context): APIGatewayProxyResponseEvent = {
+  override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     implicit val formats = DefaultFormats
 
     // parse input stream
@@ -93,8 +93,8 @@ object Handler extends RequestStreamHandler {
           .withBody("Error decoding request")
     }
     */
-    return new APIGatewayProxyResponseEvent()
-      .withStatusCode(200)
-      .withBody("Test response!")
-  }
+    val writer = new OutputStreamWriter(output, StandardCharsets.UTF_8)
+    val response = s"""{"statusCode": 200, "body": "$decodedString"}"""
+    writer.write(response)
+    writer.close()
 }
