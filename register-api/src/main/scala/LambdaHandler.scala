@@ -97,4 +97,5 @@ object Handler extends RequestStreamHandler {
     val response = s"""{"statusCode": 200, "body": "$decodedString"}"""
     writer.write(response)
     writer.close()
+  }
 }
