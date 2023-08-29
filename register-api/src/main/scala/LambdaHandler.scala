@@ -26,11 +26,10 @@ object Handler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProx
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
 
-  implicit val customRequestFormat: Format[CustomRequest] = Json.format[CustomRequest]
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
     logger.info(input.toString)
     val requestBody = Json.parse(input.getBody)
-    val request = requestBody.as[CustomRequest] // Decode request using Play JSON
+    val request = requestBody.as[CustomRequest]
     /*
     request match {
       case Some(req) =>
