@@ -18,7 +18,6 @@ import scala.util.{Try, Success, Failure}
 import slick.jdbc.PostgresProfile.api._
 import java.util.UUID
 import at.favre.lib.crypto.bcrypt._
-import CustomRequest.customRequestFormat
 
 
 
