@@ -8,6 +8,8 @@ import java.util.{Base64, Map => JavaMap, HashMap => JavaHashMap}
 import org.slf4j.LoggerFactory
 import scala.concurrent.{ExecutionContext, Future,Await}
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.util.{Try, Success, Failure}
@@ -22,16 +24,14 @@ object Handler extends RequestStreamHandler {
 
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
+  val objectMapper = new ObjectMapper()
 
 
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
-    implicit val formats = DefaultFormats
+    val requestEvent = objectMapper.readValue(input, classOf[APIGatewayProxyRequestEvent])
 
-    // parse input stream
-    val requestEvent = parse(input)
-
-    val body = (requestEvent \ "body").extract[String]
-    val isBase64Encoded = (requestEvent \ "isBase64Encoded").extract[Boolean]
+    val body = requestEvent.getBody
+    val isBase64Encoded = requestEvent.getIsBase64Encoded
 
     val decodedBytes = if (isBase64Encoded) {
       Base64.getDecoder.decode(body)
@@ -93,9 +93,10 @@ object Handler extends RequestStreamHandler {
           .withBody("Error decoding request")
     }
     */
-    val writer = new OutputStreamWriter(output, StandardCharsets.UTF_8)
-    val response = s"""{"statusCode": 200, "body": "$decodedString"}"""
-    writer.write(response)
-    writer.close()
+    val responseEvent = new APIGatewayProxyResponseEvent()
+    responseEvent.setStatusCode(200)
+    responseEvent.setBody(decodedString)
+
+    objectMapper.writeValue(output, responseEvent)
   }
 }
