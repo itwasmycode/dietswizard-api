@@ -1,7 +1,9 @@
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
-import java.io.{InputStream, OutputStream}
+import java.io.{InputStream, OutputStream,OutputStremWriter}
 import java.nio.charset.StandardCharsets
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 import java.util.{Base64, Map => JavaMap, HashMap => JavaHashMap}
 import org.slf4j.LoggerFactory
 import scala.concurrent.{ExecutionContext, Future,Await}
@@ -15,18 +17,30 @@ import at.favre.lib.crypto.bcrypt._
 import play.api.libs.json.Json
 
 
-object Handler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
+object Handler extends RequestStreamHandler {
 
 
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
 
 
-  override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    val body = input.getBody
-    val decodedBytes = Base64.getDecoder.decode(body)
-    logger.info(decodedBytes.toString)
-    val decodedString = new String(decodedBytes, "UTF-8")
+  override def handleRequest(input: InputStream, output: OutputStream, context: Context): APIGatewayProxyResponseEvent = {
+    implicit val formats = DefaultFormats
+
+    // parse input stream
+    val requestEvent = parse(input)
+
+    val body = (requestEvent \ "body").extract[String]
+    val isBase64Encoded = (requestEvent \ "isBase64Encoded").extract[Boolean]
+
+    val decodedBytes = if (isBase64Encoded) {
+      Base64.getDecoder.decode(body)
+    } else {
+      body.getBytes(StandardCharsets.UTF_8)
+    }
+
+    val decodedString = new String(decodedBytes, StandardCharsets.UTF_8)
+
     logger.info("Decoded string: {}", decodedString)
     /*
     request match {
@@ -80,7 +94,7 @@ object Handler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayPro
     }
     */
     return new APIGatewayProxyResponseEvent()
-      .withStatusCode(400)
-      .withBody("Error decoding request")
+      .withStatusCode(200)
+      .withBody("Test response!")
   }
 }
