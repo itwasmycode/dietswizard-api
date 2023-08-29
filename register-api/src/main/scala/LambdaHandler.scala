@@ -28,7 +28,7 @@ object Handler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProx
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
     logger.info(input)
     val requestBody = Json.parse(input.getBody)
-    val request = requestBody.as[CustomRequestSerialization] // Decode request using Play JSON
+    val request = requestBody.as[CustomRequestSerialization.Request] // Decode request using Play JSON
     /*
     request match {
       case Some(req) =>
