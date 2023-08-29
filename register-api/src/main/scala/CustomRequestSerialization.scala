@@ -44,3 +44,9 @@ case class Identity(
                      userAgent: String,
                      user: Option[String]
                    )
+
+object CustomRequest {
+  implicit val identityFormat: Format[Identity] = Json.format[Identity]
+  implicit val requestContextFormat: Format[RequestContext] = Json.format[RequestContext]
+  implicit val customRequestFormat: Format[CustomRequest] = Json.format[CustomRequest]
+}

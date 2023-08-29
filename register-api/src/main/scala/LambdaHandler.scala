@@ -18,6 +18,7 @@ import scala.util.{Try, Success, Failure}
 import slick.jdbc.PostgresProfile.api._
 import java.util.UUID
 import at.favre.lib.crypto.bcrypt._
+import CustomRequest.customRequestFormat
 
 
 
@@ -25,6 +26,7 @@ object Handler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProx
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
 
+  implicit val customRequestFormat: Format[CustomRequest] = Json.format[CustomRequest]
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
     logger.info(input.toString)
     val requestBody = Json.parse(input.getBody)
@@ -81,7 +83,8 @@ object Handler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProx
     }
     */
     val responseEvent = new APIGatewayProxyResponseEvent()
-    responseEvent.setStatusCode(200)
-    responseEvent.setBody("hellow")
+      .withStatusCode(200)
+      .withBody("Incoming req")
+    responseEvent
   }
 }
