@@ -25,7 +25,7 @@ object Handler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayPro
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
     val body = input.getBody
     val decodedBytes = Base64.getDecoder.decode(body)
-    logger.info(decodedBytes)
+    logger.info(decodedBytes.toString)
     val decodedString = new String(decodedBytes, "UTF-8")
     logger.info("Decoded string: {}", decodedString)
     /*
