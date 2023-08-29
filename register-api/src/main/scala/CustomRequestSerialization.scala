@@ -1,5 +1,4 @@
-import org.json4s._
-import org.json4s.native.JsonMethods._
+import play.api.libs.json._
 
 case class CustomRequest(
                    body: String,
