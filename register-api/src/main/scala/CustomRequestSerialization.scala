@@ -6,11 +6,11 @@ case class CustomRequest(
                    path: String,
                    httpMethod: String,
                    isBase64Encoded: Boolean,
-                   queryStringParameters: Map[String, String],
+                   queryStringParameters: Map[String, Map[String,String]],
                    multiValueQueryStringParameters: Map[String, List[String]],
-                   pathParameters: Map[String, String],
+                   pathParameters: Map[String, Map[String,String]],
                    stageVariables: Map[String, String],
-                   headers: Map[String, String],
+                   headers: Map[String, Map[String,String]],
                    multiValueHeaders: Map[String, List[String]],
                    requestContext: RequestContext
                  )

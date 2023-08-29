@@ -27,7 +27,6 @@ object Handler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProx
   implicit val ec = ExecutionContext.global
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    logger.info(input.toString)
     val requestBody = Json.parse(input.getBody)
     val request = requestBody.as[CustomRequest]
     /*
