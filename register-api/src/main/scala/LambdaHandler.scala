@@ -22,13 +22,13 @@ import CustomRequest.customRequestFormat
 
 
 
-object Handler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
+object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    val responseBody = Json.fromJson[CustomRequest](Json.parse(input.getBody)) match {
-    }
+    logging.info(input.getBody.toString)
+
     /*
     request match {
       case Some(req) =>
