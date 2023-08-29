@@ -1,6 +1,6 @@
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
-import java.io.{InputStream, OutputStream,OutputStremWriter}
+import java.io.{InputStream, OutputStream,OutputStreamWriter}
 import java.nio.charset.StandardCharsets
 import org.json4s._
 import org.json4s.jackson.JsonMethods._

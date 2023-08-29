@@ -26,7 +26,8 @@ lazy val root = (project in file("."))
       lambdaJavaEvents,
       circeCore,
       circeGeneric,
-      circeParser
+      circeParser,
+      jsonforJacks
     ),
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.15.2",
