@@ -77,5 +77,6 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
           .withStatusCode(400)
           .withBody("Error decoding request")
     }
+  }
 
 }
