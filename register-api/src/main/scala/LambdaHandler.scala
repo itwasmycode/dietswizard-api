@@ -24,13 +24,13 @@ import at.favre.lib.crypto.bcrypt._
 object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
+  case class Request(email: String, password: String)
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
     val request = input.getBody
-
+    val request = Json.parse(requestBody).asOpt[Request]
     request match {
-      case Success(req) =>
-        logger.info(req.toString)
+      case Some(req) =>
         val email = req.email
         val password = req.password
 
@@ -72,7 +72,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
               .withStatusCode(500)
               .withBody("DB Configuration Failed")
         }
-      case Failure =>
+      case None =>
         return new APIGatewayProxyResponseEvent()
           .withStatusCode(400)
           .withBody("Error decoding request")
