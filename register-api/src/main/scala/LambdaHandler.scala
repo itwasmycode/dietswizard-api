@@ -51,7 +51,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
                   .withBody("User already exists")
               case Left(_) =>
                 val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray)
-                val newUser = DatabaseHandler.User(UUID.randomUUID(), email, hashedPassword)
+                val newUser = DatabaseHandler.User(UUID.randomUUID().toInt, email, hashedPassword)
                 Await.result(DatabaseHandler.createUser(newUser)(db, ec), Duration.Inf) match {
                   case Right(_) =>
                     return new APIGatewayProxyResponseEvent()
