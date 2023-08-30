@@ -6,12 +6,12 @@ object DatabaseHandler {
 
   val logger = LoggerFactory.getLogger(getClass)
 
-  case class User(id: java.util.UUID, email: String, passwordHash: String)
+  case class User(id: Int, email: String, passwordHash: String)
 
   val users = TableQuery[Users]
 
   class Users(tag: Tag) extends Table[User](tag, "users") {
-    def id = column[java.util.UUID]("user_id", O.PrimaryKey)
+    def id = column[Int]("user_id", O.PrimaryKey)
 
     def email = column[String]("email")
 
