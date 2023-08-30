@@ -27,7 +27,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
   case class Request(email: String, password: String)
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    val request = input.getBody
+    val requestBody = input.getBody
     val request = Json.parse(requestBody).asOpt[Request]
     request match {
       case Some(req) =>
