@@ -26,11 +26,10 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
   implicit val ec = ExecutionContext.global
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    logger.info(input.getBody.toString)
+    val request = input.getBody
 
-    /*
     request match {
-      case Some(req) =>
+      case Success(req) =>
         logger.info(req.toString)
         val email = req.email
         val password = req.password
@@ -73,16 +72,10 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
               .withStatusCode(500)
               .withBody("DB Configuration Failed")
         }
-      case None =>
+      case Failure =>
         return new APIGatewayProxyResponseEvent()
           .withStatusCode(400)
           .withBody("Error decoding request")
     }
-    */
 
-    new APIGatewayProxyResponseEvent()
-      .withStatusCode(200)
-      .withHeaders(Map("Content-Type" -> "application/json").asJava)
-      .withBody("test")
-  }
 }
