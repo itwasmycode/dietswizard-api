@@ -26,7 +26,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
   implicit val ec = ExecutionContext.global
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    logging.info(input.getBody.toString)
+    logger.info(input.getBody.toString)
 
     /*
     request match {
@@ -79,7 +79,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
           .withBody("Error decoding request")
     }
     */
-    responseEvent
+    new APIGatewayProxyResponseEvent()
       .withStatusCode(200)
       .withHeaders(Map("Content-Type" -> "application/json"))
       .withBody("test")
