@@ -82,6 +82,6 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
     responseEvent
       .withStatusCode(200)
       .withHeaders(Map("Content-Type" -> "application/json"))
-      .withBody(responseBody)
+      .withBody("test")
   }
 }
