@@ -79,9 +79,10 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
           .withBody("Error decoding request")
     }
     */
+
     new APIGatewayProxyResponseEvent()
       .withStatusCode(200)
-      .withHeaders(Map("Content-Type" -> "application/json"))
+      .withHeaders(JavaMap("Content-Type" -> "application/json"))
       .withBody("test")
   }
 }
