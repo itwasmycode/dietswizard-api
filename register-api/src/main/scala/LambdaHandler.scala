@@ -25,8 +25,9 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
   case class Request(email: String, password: String)
-
+  implicit val requestFormat: Format[Request] = Json.format[Request]
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
+    import requestFormat._
     val requestBody = input.getBody
     val request = Json.parse(requestBody).asOpt[Request]
     request match {
