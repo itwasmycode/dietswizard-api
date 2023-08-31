@@ -19,7 +19,8 @@ import slick.jdbc.PostgresProfile.api._
 import java.util.UUID
 import at.favre.lib.crypto.bcrypt._
 
-import java.time.{Instant, ChronoUnit}
+import java.time.temporal.ChronoUnit
+import java.time.Instant
 
 
 
@@ -46,17 +47,16 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
             val result = Await.result(DatabaseHandler.refreshAccessToken(refreshToken)(db, ec), Duration.Inf)
             result match {
               case Right(email) =>
-                val expireDate = Instant.now().plus(1, ChronoUnit.DAYS)
-                TokenHandler.createJwtToken(email, refreshToken, "dietswizard", "dietswizard") match {
-                  case Success(accessToken) =>
-                    val responseBody = Map("accessToken" -> accessToken.toString).asJava
+                TokenHandler.verifyAndDecodeJwtToken(refreshToken, "dietswizard") match {
+                  case Success(claimsSet) =>
+                    val responseBody = Map("accessToken" -> claimsSet.toJSONObject.toString).asJava
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(200)
                       .withBody(responseBody.toString)
                   case Failure(e) =>
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(400)
-                      .withBody("Token generation failed.")
+                      .withBody("Token verification failed.")
                 }
               case Left(error) =>
                 return new APIGatewayProxyResponseEvent()

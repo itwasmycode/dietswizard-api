@@ -2,7 +2,6 @@ import scala.util.{Try, Success, Failure}
 
 import java.util.UUID
 import java.util.Date
-import java.time.Instant
 import java.time.{Instant, ZoneOffset}
 
 import com.nimbusds.jose.{JWSAlgorithm, JWSHeader, Payload}
