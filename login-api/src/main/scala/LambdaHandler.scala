@@ -41,36 +41,37 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
             .withStatusCode(400)
             .withBody("Invalid input")
         }
-    }
-    val refreshToken = UUID.randomUUID().toString
-    val expireDate = Instant.now().plus(14, ChronoUnit.DAYS)
 
-    DatabaseConfig.getDbConfig match {
-      case Success(dbConfig) =>
-        val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
-        val result = Await.result(DatabaseHandler.authenticateUser(email, password, refreshToken, expireDate)(db, ec), Duration.Inf)
-        result match {
-          case Right(user) =>
-            TokenHandler.createJwtToken(email, uuid, "dietswizard", "dietswizard") match {
-              case Success(accessToken) =>
-                val responseBody = Json.toJson(Map("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString)).toString
-                return new APIGatewayProxyResponseEvent()
-                  .withStatusCode(200)
-                  .withBody(responseBody)
-              case Failure(e) =>
+        val refreshToken = UUID.randomUUID().toString
+        val expireDate = Instant.now().plus(14, ChronoUnit.DAYS)
+
+        DatabaseConfig.getDbConfig match {
+          case Success(dbConfig) =>
+            val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
+            val result = Await.result(DatabaseHandler.authenticateUser(email, password, refreshToken, expireDate)(db, ec), Duration.Inf)
+            result match {
+              case Right(user) =>
+                TokenHandler.createJwtToken(email, uuid, "dietswizard", "dietswizard") match {
+                  case Success(accessToken) =>
+                    val responseBody = Json.toJson(Map("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString)).toString
+                    return new APIGatewayProxyResponseEvent()
+                      .withStatusCode(200)
+                      .withBody(responseBody)
+                  case Failure(e) =>
+                    return new APIGatewayProxyResponseEvent()
+                      .withStatusCode(400)
+                      .withBody("Token generation failed.")
+                }
+              case Left(error) =>
                 return new APIGatewayProxyResponseEvent()
                   .withStatusCode(400)
-                  .withBody("Token generation failed.")
+                  .withBody(error.toString)
             }
-          case Left(error) =>
+          case Failure(e) =>
             return new APIGatewayProxyResponseEvent()
-              .withStatusCode(400)
-              .withBody(error.toString)
+              .withStatusCode(500)
+              .withBody(e.toString)
         }
-      case Failure(e) =>
-        return new APIGatewayProxyResponseEvent()
-          .withStatusCode(500)
-          .withBody(e.toString)
     }
   }
 }
