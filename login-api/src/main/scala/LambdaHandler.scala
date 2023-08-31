@@ -15,6 +15,8 @@ import slick.jdbc.PostgresProfile.api._
 import java.util.UUID
 import at.favre.lib.crypto.bcrypt._
 
+import java.time.temporal.ChronoUnit
+import java.time.Instant
 
 
 object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
@@ -51,7 +53,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
           case Right(user) =>
             TokenHandler.createJwtToken(email, uuid, "dietswizard", "dietswizard") match {
               case Success(accessToken) =>
-                val responseBody = Json.toJson(Map("accessToken" -> accessToken, "refreshToken" -> refreshToken)).toString
+                val responseBody = Json.toJson(Map("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString)).toString
                 return new APIGatewayProxyResponseEvent()
                   .withStatusCode(200)
                   .withBody(responseBody)

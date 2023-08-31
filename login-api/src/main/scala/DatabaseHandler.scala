@@ -2,6 +2,7 @@ import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.{Future, ExecutionContext}
 import at.favre.lib.crypto.bcrypt._
 import org.slf4j.LoggerFactory
+import java.time.Instant
 
 object DatabaseHandler {
 
@@ -38,10 +39,18 @@ object DatabaseHandler {
     val query = users.filter(_.email === email)
     db.run(query.result.headOption).flatMap {
       case Some(user) if BCrypt.verifyer().verify(password.toCharArray, user.passwordHash.getBytes).verified =>
-        val userToken = UserToken(0, user.id, refreshToken, expireDate)
-        db.run(userTokens += userToken).map(_ => Right(user))
+        val userTokenQuery = userTokens.filter(_.userId === user.id)
+        db.run(userTokenQuery.result.headOption).flatMap {
+          case Some(userToken) =>
+            val updatedUserToken = userToken.copy(refreshToken = refreshToken, expireDate = expireDate)
+            db.run(userTokenQuery.update(updatedUserToken)).map(_ => Right(user))
+          case None =>
+            val newUserToken = UserToken(0, user.id, refreshToken, expireDate)
+            db.run(userTokens += newUserToken).map(_ => Right(user))
+        }
       case _ => Future.successful(Left("Invalid credentials"))
     }
   }
+
 
 }
