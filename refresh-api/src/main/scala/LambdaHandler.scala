@@ -40,28 +40,34 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
     request match {
       case Some(req) =>
         val refreshToken = req.refreshToken
-
         DatabaseConfig.getDbConfig match {
           case Success(dbConfig) =>
             val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
-            val result = Await.result(DatabaseHandler.refreshAccessToken(refreshToken)(db, ec), Duration.Inf)
-            result match {
-              case Right(email) =>
-                TokenHandler.verifyAndDecodeJwtToken(refreshToken, "dietswizard") match {
-                  case Success(claimsSet) =>
-                    val responseBody = Map("accessToken" -> claimsSet.toJSONObject.toString).asJava
-                    return new APIGatewayProxyResponseEvent()
-                      .withStatusCode(200)
-                      .withBody(responseBody.toString)
-                  case Failure(e) =>
+            SecretHandler.retrieveSecret("uuid") match {
+              case Success(secret) =>
+                val result = Await.result(DatabaseHandler.refreshAccessToken(refreshToken)(db, ec), Duration.Inf)
+                result match {
+                  case Right(email) =>
+                    TokenHandler.createJwtToken(email, secret, "dietswizard", "dietswizard") match {
+                      case Success(accessToken) =>
+                        val responseBody = Map("accessToken" -> accessToken.toString).asJava
+                        return new APIGatewayProxyResponseEvent()
+                          .withStatusCode(200)
+                          .withBody(responseBody.toString)
+                      case Failure(e) =>
+                        return new APIGatewayProxyResponseEvent()
+                          .withStatusCode(400)
+                          .withBody("Token generation failed.")
+                    }
+                  case Left(error) =>
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(400)
-                      .withBody("Token verification failed.")
+                      .withBody(error.toString)
                 }
-              case Left(error) =>
+              case Failure(e) =>
                 return new APIGatewayProxyResponseEvent()
-                  .withStatusCode(400)
-                  .withBody(error.toString)
+                  .withStatusCode(500)
+                  .withBody(e.toString)
             }
           case Failure(e) =>
             return new APIGatewayProxyResponseEvent()
@@ -72,6 +78,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
         return new APIGatewayProxyResponseEvent()
           .withStatusCode(400)
           .withBody("Invalid request body.")
+        }
     }
-  }
 }
+

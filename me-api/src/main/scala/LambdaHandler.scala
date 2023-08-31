@@ -65,5 +65,5 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
               .withBody(e.toString)
         }
     }
-  }
+}
 
