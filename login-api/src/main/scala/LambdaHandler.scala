@@ -51,7 +51,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
             val result = Await.result(DatabaseHandler.authenticateUser(email, password, refreshToken, expireDate)(db, ec), Duration.Inf)
             result match {
               case Right(user) =>
-                TokenHandler.createJwtToken(email, uuid, "dietswizard", "dietswizard") match {
+                TokenHandler.createJwtToken(email, refreshToken, "dietswizard", "dietswizard") match {
                   case Success(accessToken) =>
                     val responseBody = Json.toJson(Map("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString)).toString
                     return new APIGatewayProxyResponseEvent()
