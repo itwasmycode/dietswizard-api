@@ -13,6 +13,8 @@ object DatabaseHandler {
 
   class Users(tag: Tag) extends Table[User](tag, "users") {
     def id = column[Int]("user_id", O.PrimaryKey, O.AutoInc)
+
+
     def email = column[String]("email")
     def passwordHash = column[String]("password")
 

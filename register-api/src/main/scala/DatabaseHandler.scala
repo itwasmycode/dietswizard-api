@@ -6,19 +6,16 @@ object DatabaseHandler {
 
   val logger = LoggerFactory.getLogger(getClass)
 
-  case class User(id: Int, email: String, passwordHash: String)
-
-  val users = TableQuery[Users]
+  case class User(user_id: Int, uuid: String, email: String, password: String, ...)
 
   class Users(tag: Tag) extends Table[User](tag, "users") {
-    def id = column[Int]("user_id", O.PrimaryKey)
-
+    def user_id = column[Int]("user_id", O.PrimaryKey, O.AutoInc)
+    def uuid = column[String]("uuid")
     def email = column[String]("email")
-
-    def passwordHash = column[String]("password")
-
-    def * = (id, email, passwordHash) <> (User.tupled, User.unapply)
+    def password = column[String]("password")
+    def * = (user_id, uuid, email, password, ...) <> (User.tupled, User.unapply)
   }
+
 
   // Find user by email
   def findUserByEmail(email: String)(implicit db: Database, ec: ExecutionContext): Future[Either[String, User]] = {
@@ -34,4 +31,5 @@ object DatabaseHandler {
       case e => Left(e.getMessage)
     }
   }
+
 }
