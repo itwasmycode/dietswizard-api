@@ -3,6 +3,7 @@ import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest
 import com.amazonaws.regions.Regions
 import com.amazonaws.ClientConfiguration
 import scala.util.{Try, Success, Failure}
+
 object SecretHandler{
   def retrieveSecret(secretId: String): Try[String] = Try {
     val clientConfiguration = new ClientConfiguration()

@@ -3,6 +3,8 @@ import com.nimbusds.jose.crypto.DirectEncrypter
 import com.nimbusds.jose.crypto.MACSigner
 import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
 
+import scala.util.{Try, Success, Failure}
+
 object TokenHandler {
   def verifyAndDecodeJwtToken(jwtToken: String, secretKey: String): Try[JWTClaimsSet] = {
     Try {

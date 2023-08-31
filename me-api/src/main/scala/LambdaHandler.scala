@@ -1,15 +1,15 @@
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import scala.collection.JavaConverters._
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
-import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
-import com.nimbusds.jose.crypto.MACVerifier
-import play.api.libs.json.{Json, Writes}
-import scala.concurrent.{ExecutionContext, Future, Await}
-import scala.concurrent.duration._
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import java.util.{Date}
+import org.slf4j.LoggerFactory
+import scala.concurrent.{ExecutionContext, Future}
+import play.api.libs.json._
 import scala.util.{Try, Success, Failure}
+import slick.jdbc.PostgresProfile.api._
+import java.util.UUID
 
-import java.util.Date
-
-object MeHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
+object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
   implicit val ec = ExecutionContext.global
 
   case class Request(accessToken: String)
@@ -19,15 +19,14 @@ object MeHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayPr
   implicit val responseWrites: Writes[Response] = Json.writes[Response]
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    import requestFormat._
-
     val requestBody = input.getBody
     val request = Json.parse(requestBody).asOpt[Request]
+
     request match {
       case Some(req) =>
         val accessToken = req.accessToken
 
-        SecretManager.getSecretKey match {
+        DatabaseConfig.getDbConfig match {
           case Success(secretKey) =>
             TokenHandler.verifyAndDecodeJwtToken(accessToken, secretKey) match {
               case Success(claimsSet) =>
@@ -40,11 +39,11 @@ object MeHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayPr
                     .withBody("Access token expired")
                 }
 
-                val email = claimsSet.getStringClaim("email")
+                val userId = claimsSet.getStringClaim("user_id")
                 DatabaseConfig.getDbConfig match {
                   case Success(dbConfig) =>
                     val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
-                    Await.result(DatabaseHandler.findUserByEmail(email)(db, ec), Duration.Inf) match {
+                    Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
                       case Right(user) =>
                         val response = Response(user.uuid, user.gender, user.birthday, user.premium, user.status)
                         return new APIGatewayProxyResponseEvent()
