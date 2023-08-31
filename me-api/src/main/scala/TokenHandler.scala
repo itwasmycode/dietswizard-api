@@ -1,3 +1,8 @@
+import com.nimbusds.jose.{JWSAlgorithm, JWSHeader, Payload}
+import com.nimbusds.jose.crypto.DirectEncrypter
+import com.nimbusds.jose.crypto.MACSigner
+import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
+
 object TokenHandler {
   def verifyAndDecodeJwtToken(jwtToken: String, secretKey: String): Try[JWTClaimsSet] = {
     Try {

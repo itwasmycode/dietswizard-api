@@ -10,6 +10,18 @@ variable "register_image_uri" {
   default = ""
 }
 
+variable "refresh_image_uri" {
+  type = string
+  # You can add an optional default value if needed:
+  default = ""
+}
+
+variable "me_image_uri" {
+  type = string
+  # You can add an optional default value if needed:
+  default = ""
+}
+
 variable "postgre_id" {
   type = string
   # You can add an optional default value if needed:
