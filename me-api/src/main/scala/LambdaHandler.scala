@@ -3,8 +3,8 @@ import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import java.util.{Date}
 import org.slf4j.LoggerFactory
-import scala.concurrent.{ExecutionContext, Future, Await}  // Added Await
-import scala.concurrent.duration.Duration  // Added Duration
+import scala.concurrent.{ExecutionContext, Future, Await}
+import scala.concurrent.duration.Duration
 import play.api.libs.json._
 import scala.util.{Try, Success, Failure}
 import slick.jdbc.PostgresProfile.api._
@@ -26,8 +26,8 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
     request match {
       case Some(req) =>
         val accessToken = req.accessToken
-        SecretHandler.retrieveSecret("uuid") match
-          case Success(secret)
+        SecretHandler.retrieveSecret("uuid") match {
+          case Success(secret) =>
             DatabaseConfig.getDbConfig match {
               case Success(dbConfig) =>
                 TokenHandler.verifyAndDecodeJwtToken(accessToken, secret) match {
@@ -52,7 +52,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                       case Left(error) =>
                         return new APIGatewayProxyResponseEvent()
                           .withStatusCode(500)
-                          .withBody(error.toString)  // Changed error to error.toString
+                          .withBody(error.toString)
                     }
                   case Failure(e) =>
                     return new APIGatewayProxyResponseEvent()
@@ -64,15 +64,19 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                   .withStatusCode(500)
                   .withBody("Failed to retrieve secret key")
             }
+          case Failure(e) =>
+            return new APIGatewayProxyResponseEvent()
+              .withStatusCode(500)
+              .withBody(e.toString)
           case None =>
             return new APIGatewayProxyResponseEvent()
               .withStatusCode(400)
               .withBody("Error decoding request")
         }
-    case Failure(e)
-    =>
-    return new APIGatewayProxyResponseEvent()
-      .withStatusCode(500)
-      .withBody(e.toString)
+      case None =>
+        return new APIGatewayProxyResponseEvent()
+          .withStatusCode(400)
+          .withBody("Invalid request body")
+    }
   }
 }
