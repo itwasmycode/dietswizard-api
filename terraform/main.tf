@@ -326,3 +326,98 @@ resource "aws_lambda_permission" "apigw_login_lambda_permission" {
   function_name = aws_lambda_function.login_lambda.function_name
   principal     = "apigateway.amazonaws.com"
 }
+
+
+resource "aws_api_gateway_resource" "me_resource" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_resource.my_resource.id
+  path_part   = "me"
+}
+
+resource "aws_api_gateway_method" "me_method" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.me_resource.id
+  http_method   = "POST"
+  authorization = "None"
+}
+
+resource "aws_lambda_permission" "apigw_me_lambda_permission" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.me_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+}
+
+resource "aws_api_gateway_integration" "me_integration" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.me_resource.id
+  http_method = aws_api_gateway_method.me_method.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.me_lambda.invoke_arn
+}
+
+resource "aws_lambda_function" "me_lambda" {
+  function_name = var.branch_name == "main" ? "me-prod" : "me-dev"
+  role          = aws_iam_role.iam_role.arn
+  package_type  = "Image"
+  image_uri     = var.me_image_uri
+  memory_size   = 2048
+  timeout       = 20
+
+  vpc_config {
+    subnet_ids = [
+      aws_subnet.subnet_private_eucentral1a.id,
+      aws_subnet.subnet_private_eucentral1b.id
+    ]
+    security_group_ids = [data.aws_security_group.default.id]
+  }
+}
+
+resource "aws_api_gateway_resource" "refresh_resource" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_resource.my_resource.id
+  path_part   = "refresh"
+}
+
+resource "aws_api_gateway_method" "refresh_method" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.refresh_resource.id
+  http_method   = "POST"
+  authorization = "None"
+}
+
+resource "aws_lambda_permission" "apigw_refresh_lambda_permission" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.refresh_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+}
+
+resource "aws_api_gateway_integration" "refresh_integration" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.refresh_resource.id
+  http_method = aws_api_gateway_method.refresh_method.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.refresh_lambda.invoke_arn
+}
+
+resource "aws_lambda_function" "refresh_lambda" {
+  function_name = var.branch_name == "main" ? "refresh-prod" : "refresh-dev"
+  role          = aws_iam_role.iam_role.arn
+  package_type  = "Image"
+  image_uri     = var.refresh_image_uri
+  memory_size   = 2048
+  timeout       = 20
+
+  vpc_config {
+    subnet_ids = [
+      aws_subnet.subnet_private_eucentral1a.id,
+      aws_subnet.subnet_private_eucentral1b.id
+    ]
+    security_group_ids = [data.aws_security_group.default.id]
+  }
+}

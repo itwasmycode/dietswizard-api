@@ -8,7 +8,7 @@ object DatabaseHandler {
   val logger = LoggerFactory.getLogger(getClass)
 
   case class User(id: Int, email: String, passwordHash: String)
-  case class UserToken(userTokenId: Int, userId: Int, refreshToken: String, expireDate: Date)
+  case class UserToken(userTokenId: Int, userId: Int, refreshToken: String, expireDate: java.util.Date)
 
   val users = TableQuery[Users]
   val userTokens = TableQuery[UserTokens]
@@ -22,16 +22,20 @@ object DatabaseHandler {
   }
 
   class UserTokens(tag: Tag) extends Table[UserToken](tag, "user_tokens") {
-    def userTokenId = column[Int]("user_token_id", O.PrimaryKey)
+    def userTokenId = column[Int]("user_token_id", O.PrimaryKey, O.AutoInc)
+
     def userId = column[Int]("user_id")
+
     def refreshToken = column[String]("refresh_token")
-    def expireDate = column[Date]("expire_date")
-    def created_at = column[Date]("created_at")
-    def updated_at = column[Date]("updated_at")
+
+    def expireDate = column[java.sql.Date]("expire_date")
+
+    def created_at = column[java.sql.Date]("created_at")
+
+    def updated_at = column[java.sql.Date]("updated_at")
 
     def * = (userTokenId, userId, refreshToken, expireDate) <> (UserToken.tupled, UserToken.unapply)
   }
-
   // Find user by email
   def findUserByEmail(email: String)(implicit db: Database, ec: ExecutionContext): Future[Either[String, User]] = {
     db.run(users.filter(_.email === email).result.headOption).map {
