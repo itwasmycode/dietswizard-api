@@ -2,7 +2,7 @@ import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.{Future, ExecutionContext}
 import java.util.{UUID, Date}
 import org.slf4j.LoggerFactory
-
+import java.time.Instant
 object DatabaseHandler {
 
   val logger = LoggerFactory.getLogger(getClass)
