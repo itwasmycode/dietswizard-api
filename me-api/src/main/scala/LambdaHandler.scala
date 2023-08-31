@@ -26,48 +26,53 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
     request match {
       case Some(req) =>
         val accessToken = req.accessToken
-        val secretUUID = SecretHandler.retrieveSecret("uuid")
-        DatabaseConfig.getDbConfig match {
-          case Success(dbConfig) =>
-            val secretKey = dbConfig.secretKey  // Changed secretKey.secretKey to dbConfig.secretKey
-            TokenHandler.verifyAndDecodeJwtToken(accessToken, secretUUID) match {
-              case Success(claimsSet) =>
-                val expirationTime = claimsSet.getExpirationTime
-                val currentTime = new Date()
+        SecretHandler.retrieveSecret("uuid") match
+          case Success(secret)
+            DatabaseConfig.getDbConfig match {
+              case Success(dbConfig) =>
+                TokenHandler.verifyAndDecodeJwtToken(accessToken, secret) match {
+                  case Success(claimsSet) =>
+                    val expirationTime = claimsSet.getExpirationTime
+                    val currentTime = new Date()
 
-                if (expirationTime.before(currentTime)) {
-                  return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(401)
-                    .withBody("Access token expired")
-                }
+                    if (expirationTime.before(currentTime)) {
+                      return new APIGatewayProxyResponseEvent()
+                        .withStatusCode(401)
+                        .withBody("Access token expired")
+                    }
 
-                val userId = claimsSet.getStringClaim("user_id").toInt
-                val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
-                Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
-                  case Right(user: DatabaseHandler.User) =>
-                    val response = Response(user.uuid, user.gender, user.birthday, user.premium, user.status)
+                    val userId = claimsSet.getStringClaim("user_id").toInt
+                    val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
+                    Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
+                      case Right(user: DatabaseHandler.User) =>
+                        val response = Response(user.uuid, user.gender, user.birthday, user.premium, user.status)
+                        return new APIGatewayProxyResponseEvent()
+                          .withStatusCode(200)
+                          .withBody(Json.toJson(response).toString())
+                      case Left(error) =>
+                        return new APIGatewayProxyResponseEvent()
+                          .withStatusCode(500)
+                          .withBody(error.toString)  // Changed error to error.toString
+                    }
+                  case Failure(e) =>
                     return new APIGatewayProxyResponseEvent()
-                      .withStatusCode(200)
-                      .withBody(Json.toJson(response).toString())
-                  case Left(error) =>
-                    return new APIGatewayProxyResponseEvent()
-                      .withStatusCode(500)
-                      .withBody(error.toString)  // Changed error to error.toString
+                      .withStatusCode(400)
+                      .withBody("Invalid access token")
                 }
               case Failure(e) =>
                 return new APIGatewayProxyResponseEvent()
-                  .withStatusCode(400)
-                  .withBody("Invalid access token")
+                  .withStatusCode(500)
+                  .withBody("Failed to retrieve secret key")
             }
-          case Failure(e) =>
+          case None =>
             return new APIGatewayProxyResponseEvent()
-              .withStatusCode(500)
-              .withBody("Failed to retrieve secret key")
+              .withStatusCode(400)
+              .withBody("Error decoding request")
         }
-      case None =>
-        return new APIGatewayProxyResponseEvent()
-          .withStatusCode(400)
-          .withBody("Error decoding request")
-    }
+    case Failure(e)
+    =>
+    return new APIGatewayProxyResponseEvent()
+      .withStatusCode(500)
+      .withBody(e.toString)
   }
 }

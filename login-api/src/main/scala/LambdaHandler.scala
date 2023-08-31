@@ -43,37 +43,43 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
         }
 
         val refreshToken = UUID.randomUUID().toString
-        val secretUUID = SecretHandler.retrieveSecret("uuid")
-        val expireDate = Instant.now().plus(14, ChronoUnit.DAYS)
+        SecretHandler.retrieveSecret("uuid") match {
+          case Success(secret) =>
+            val expireDate = Instant.now ().plus (14, ChronoUnit.DAYS)
 
-        DatabaseConfig.getDbConfig match {
-          case Success(dbConfig) =>
-            val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
-            val result = Await.result(DatabaseHandler.authenticateUser(email, password, refreshToken, expireDate)(db, ec), Duration.Inf)
-            result match {
-              case Right(user) =>
-                TokenHandler.createJwtToken(email, secretUUID, "dietswizard", "dietswizard") match {
-                  case Success(accessToken) =>
-                    val responseBody = Map("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString).asJava
-                    return new APIGatewayProxyResponseEvent()
-                      .withStatusCode(200)
-                      .withBody(responseBody.toString)
-                  case Failure(e) =>
-                    return new APIGatewayProxyResponseEvent()
-                      .withStatusCode(400)
-                      .withBody("Token generation failed.")
+            DatabaseConfig.getDbConfig match {
+            case Success (dbConfig) =>
+              val db = Database.forURL (dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
+              val result = Await.result (DatabaseHandler.authenticateUser (email, password, refreshToken, expireDate) (db, ec), Duration.Inf)
+              result match {
+              case Right (user) =>
+                TokenHandler.createJwtToken (email, secret, "dietswizard", "dietswizard") match {
+                case Success (accessToken) =>
+                    val responseBody = Map ("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString).asJava
+                    return new APIGatewayProxyResponseEvent ()
+                    .withStatusCode (200)
+                    .withBody (responseBody.toString)
+                case Failure (e) =>
+                    return new APIGatewayProxyResponseEvent ()
+                    .withStatusCode (400)
+                    .withBody ("Token generation failed.")
+                  }
+              case Left (error) =>
+                return new APIGatewayProxyResponseEvent ()
+                .withStatusCode (400)
+                .withBody (error.toString)
                 }
-              case Left(error) =>
-                return new APIGatewayProxyResponseEvent()
-                  .withStatusCode(400)
-                  .withBody(error.toString)
+            case Failure (e) =>
+              return new APIGatewayProxyResponseEvent ()
+              .withStatusCode (500)
+              .withBody (e.toString)
             }
           case Failure(e) =>
             return new APIGatewayProxyResponseEvent()
               .withStatusCode(500)
               .withBody(e.toString)
         }
+        }
     }
   }
-}
 
