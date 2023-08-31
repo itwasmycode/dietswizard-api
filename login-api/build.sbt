@@ -20,7 +20,14 @@ lazy val root = (project in file("."))
       bcrypt,
       logging,
       loggingforj,
-      awsjavasdk
+      awsjavasdk,
+      jacksonScala,
+      lambdaJavaCore,
+      lambdaJavaEvents,
+      circeCore,
+      circeGeneric,
+      circeParser,
+      jsonforJacks
     ),
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.15.2",
@@ -35,5 +42,5 @@ lazy val root = (project in file("."))
       case x => MergeStrategy.first
     }
   ).settings(
-    assembly / assemblyOutputPath := file("target/function.jar")
-  )
+  assembly / assemblyOutputPath := file("target/function.jar")
+)
