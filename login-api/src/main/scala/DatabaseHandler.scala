@@ -21,11 +21,27 @@ object DatabaseHandler {
     def * = (id, email, passwordHash) <> (User.tupled, User.unapply)
   }
 
-  def authenticateUser(email: String, password: String)(implicit db: Database, ec: ExecutionContext): Future[Either[String, User]] = {
+  case class UserToken(userTokenId: Int, userId: Int, refreshToken: String, expireDate: Instant)
+
+  val userTokens = TableQuery[UserTokens]
+
+  class UserTokens(tag: Tag) extends Table[UserToken](tag, "user_tokens") {
+    def userTokenId = column[Int]("user_token_id", O.PrimaryKey, O.AutoInc)
+    def userId = column[Int]("user_id")
+    def refreshToken = column[String]("refresh_token")
+    def expireDate = column[Instant]("expire_date")
+
+    def * = (userTokenId, userId, refreshToken, expireDate) <> (UserToken.tupled, UserToken.unapply)
+  }
+
+  def authenticateUser(email: String, password: String, refreshToken: String, expireDate: Instant)(implicit db: Database, ec: ExecutionContext): Future[Either[String, User]] = {
     val query = users.filter(_.email === email)
-    db.run(query.result.headOption).map {
-      case Some(user) if BCrypt.verifyer().verify(password.toCharArray, user.passwordHash.getBytes).verified => Right(user)
-      case _ => Left("Invalid credentials")
+    db.run(query.result.headOption).flatMap {
+      case Some(user) if BCrypt.verifyer().verify(password.toCharArray, user.passwordHash.getBytes).verified =>
+        val userToken = UserToken(0, user.id, refreshToken, expireDate)
+        db.run(userTokens += userToken).map(_ => Right(user))
+      case _ => Future.successful(Left("Invalid credentials"))
     }
   }
+
 }
