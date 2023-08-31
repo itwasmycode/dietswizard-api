@@ -43,6 +43,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
         }
 
         val refreshToken = UUID.randomUUID().toString
+        val secretUUID = SecretHandler.retrieveSecret("uuid")
         val expireDate = Instant.now().plus(14, ChronoUnit.DAYS)
 
         DatabaseConfig.getDbConfig match {
@@ -51,7 +52,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
             val result = Await.result(DatabaseHandler.authenticateUser(email, password, refreshToken, expireDate)(db, ec), Duration.Inf)
             result match {
               case Right(user) =>
-                TokenHandler.createJwtToken(email, refreshToken, "dietswizard", "dietswizard") match {
+                TokenHandler.createJwtToken(email, secretUUID, "dietswizard", "dietswizard") match {
                   case Success(accessToken) =>
                     val responseBody = Map("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString).asJava
                     return new APIGatewayProxyResponseEvent()

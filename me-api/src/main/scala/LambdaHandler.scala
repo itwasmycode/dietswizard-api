@@ -26,11 +26,11 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
     request match {
       case Some(req) =>
         val accessToken = req.accessToken
-
+        val secretUUID = SecretHandler.retrieveSecret("uuid")
         DatabaseConfig.getDbConfig match {
           case Success(dbConfig) =>
             val secretKey = dbConfig.secretKey  // Changed secretKey.secretKey to dbConfig.secretKey
-            TokenHandler.verifyAndDecodeJwtToken(accessToken, secretKey) match {
+            TokenHandler.verifyAndDecodeJwtToken(accessToken, secretUUID) match {
               case Success(claimsSet) =>
                 val expirationTime = claimsSet.getExpirationTime
                 val currentTime = new Date()
