@@ -14,6 +14,8 @@ jobs:
         project:
           - login-api
           - register-api
+          - me-api
+          - refresh-api
 
     steps:
       - name: Checkout code
