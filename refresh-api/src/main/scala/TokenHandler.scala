@@ -1,5 +1,5 @@
 import com.nimbusds.jose.{JWSAlgorithm, JWSHeader, Payload}
-import com.nimbusds.jose.crypto.{DirectEncrypter,MACSigner,MacVerifier}
+import com.nimbusds.jose.crypto.{DirectEncrypter,MACSigner,MACVerifier}
 import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
 
 

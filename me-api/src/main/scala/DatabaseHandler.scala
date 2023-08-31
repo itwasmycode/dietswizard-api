@@ -3,6 +3,8 @@ import scala.concurrent.{Future, ExecutionContext}
 import java.util.UUID
 import org.slf4j.LoggerFactory
 
+import java.util.Date
+
 object DatabaseHandler {
   case class User(user_id: Int, email: String, passwordHash: String, uuid: String, gender: Int, birthday: Date, premium: Boolean, status: Int)
 
