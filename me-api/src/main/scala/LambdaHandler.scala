@@ -3,7 +3,8 @@ import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import java.util.{Date}
 import org.slf4j.LoggerFactory
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Await}  // Added Await
+import scala.concurrent.duration.Duration  // Added Duration
 import play.api.libs.json._
 import scala.util.{Try, Success, Failure}
 import slick.jdbc.PostgresProfile.api._
@@ -27,8 +28,9 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
         val accessToken = req.accessToken
 
         DatabaseConfig.getDbConfig match {
-          case Success(secretKey) =>
-            TokenHandler.verifyAndDecodeJwtToken(accessToken, secretKey.secretKey) match {
+          case Success(dbConfig) =>
+            val secretKey = dbConfig.secretKey  // Changed secretKey.secretKey to dbConfig.secretKey
+            TokenHandler.verifyAndDecodeJwtToken(accessToken, secretKey) match {
               case Success(claimsSet) =>
                 val expirationTime = claimsSet.getExpirationTime
                 val currentTime = new Date()
@@ -40,24 +42,17 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                 }
 
                 val userId = claimsSet.getStringClaim("user_id").toInt
-                DatabaseConfig.getDbConfig match {
-                  case Success(dbConfig) =>
-                    val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
-                    Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
-                      case Right(user: DatabaseHandler.User) =>
-                        val response = Response(user.uuid, user.gender, user.birthday, user.premium, user.status)
-                        return new APIGatewayProxyResponseEvent()
-                          .withStatusCode(200)
-                          .withBody(Json.toJson(response).toString())
-                      case Left(error) =>
-                        return new APIGatewayProxyResponseEvent()
-                          .withStatusCode(500)
-                          .withBody(error)
-                    }
-                  case Failure(e) =>
+                val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
+                Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
+                  case Right(user: DatabaseHandler.User) =>
+                    val response = Response(user.uuid, user.gender, user.birthday, user.premium, user.status)
+                    return new APIGatewayProxyResponseEvent()
+                      .withStatusCode(200)
+                      .withBody(Json.toJson(response).toString())
+                  case Left(error) =>
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(500)
-                      .withBody("DB Configuration Failed")
+                      .withBody(error.toString)  // Changed error to error.toString
                 }
               case Failure(e) =>
                 return new APIGatewayProxyResponseEvent()
