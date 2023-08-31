@@ -20,13 +20,8 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
   implicit val responseWrites: Writes[Response] = Json.writes[Response]
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    val requestBody = input.getBody
-    val request = Json.parse(requestBody).asOpt[Request]
-
-    request match {
-      case Some(req) =>
-        val accessToken = req.accessToken
-        SecretHandler.retrieveSecret("uuid") match {
+    val accessToken = input.getHeaders.get("Authorization").substring(7)
+    SecretHandler.retrieveSecret("uuid") match {
           case Success(secret) =>
             DatabaseConfig.getDbConfig match {
               case Success(dbConfig) =>
@@ -69,10 +64,6 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
               .withStatusCode(500)
               .withBody(e.toString)
         }
-      case None =>
-        return new APIGatewayProxyResponseEvent()
-          .withStatusCode(400)
-          .withBody("Invalid request body")
     }
   }
-}
+
