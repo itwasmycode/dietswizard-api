@@ -7,6 +7,8 @@ import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
 import scala.util.{Try, Success, Failure}
 
+import java.util.Date
+
 object MeHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
   implicit val ec = ExecutionContext.global
 
@@ -29,8 +31,16 @@ object MeHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayPr
           case Success(secretKey) =>
             TokenHandler.verifyAndDecodeJwtToken(accessToken, secretKey) match {
               case Success(claimsSet) =>
-                val email = claimsSet.getStringClaim("email")
+                val expirationTime = claimsSet.getExpirationTime
+                val currentTime = new Date()
 
+                if (expirationTime.before(currentTime)) {
+                  return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(401)
+                    .withBody("Access token expired")
+                }
+
+                val email = claimsSet.getStringClaim("email")
                 DatabaseConfig.getDbConfig match {
                   case Success(dbConfig) =>
                     val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
