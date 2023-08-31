@@ -73,7 +73,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
               .withStatusCode(400)
               .withBody("Error decoding request")
         }
-      case None =>
+      case Failure =>
         return new APIGatewayProxyResponseEvent()
           .withStatusCode(400)
           .withBody("Invalid request body")
