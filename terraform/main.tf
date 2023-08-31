@@ -264,7 +264,11 @@ resource "aws_api_gateway_deployment" "my_deployment" {
     aws_api_gateway_integration.register_integration,
     aws_api_gateway_method.register_method,
     aws_api_gateway_integration.login_integration,
-    aws_api_gateway_method.login_method
+    aws_api_gateway_method.login_method,
+    aws_api_gateway_integration.me_integration,
+    aws_api_gateway_method.me_method,
+    aws_api_gateway_integration.refresh_integration,
+    aws_api_gateway_method.refresh_method
   ]
 
   rest_api_id = aws_api_gateway_rest_api.my_api.id

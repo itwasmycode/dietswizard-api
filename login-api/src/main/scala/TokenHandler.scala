@@ -14,7 +14,7 @@ object TokenHandler {
   def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): Try[String] = {
     (for {
       now <- Try(new Date())
-      accessTokenExpirationMinutes = 15
+      accessTokenExpirationMinutes = 1
       accessTokenExpiration = now.getTime + accessTokenExpirationMinutes * 60 * 1000
       claimsSet <- Try(
         new JWTClaimsSet.Builder()
