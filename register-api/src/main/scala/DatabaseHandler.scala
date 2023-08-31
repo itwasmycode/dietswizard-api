@@ -13,7 +13,7 @@ object DatabaseHandler {
     def uuid = column[String]("uuid")
     def email = column[String]("email")
     def password = column[String]("password")
-    def * = (user_id, uuid, email, password, ...) <> (User.tupled, User.unapply)
+    def * = (user_id, uuid, email, password) <> (User.tupled, User.unapply)
   }
 
 
