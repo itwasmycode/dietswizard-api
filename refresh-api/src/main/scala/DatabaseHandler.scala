@@ -36,19 +36,18 @@ object DatabaseHandler {
 
     def * = (userTokenId, userId, refreshToken, expireDate) <> (UserToken.tupled, UserToken.unapply)
   }
-  // Find user by email
-  def findUserByEmail(email: String)(implicit db: Database, ec: ExecutionContext): Future[Either[String, User]] = {
-    db.run(users.filter(_.email === email).result.headOption).map {
-      case Some(user) => Right(user)
-      case None => Left("User not found")
-    }
-  }
 
-  // Find user id by refresh token
-  def findUserIdByRefreshToken(refreshToken: String)(implicit db: Database, ec: ExecutionContext): Future[Either[String, (Int, Date)]] = {
-    db.run(userTokens.filter(_.refreshToken === refreshToken).result.headOption).map {
-      case Some(userToken) => Right((userToken.userId, userToken.expireDate))
-      case None => Left("Refresh token not found")
+  def refreshAccessToken(refreshToken: String)(implicit db: Database, ec: ExecutionContext): Future[Either[String, String]] = {
+    val query = userTokens.filter(_.refreshToken === refreshToken)
+    db.run(query.result.headOption).flatMap {
+      case Some(userToken) if userToken.expireDate.isAfter(Instant.now) =>
+        val userQuery = users.filter(_.id === userToken.userId)
+        db.run(userQuery.result.headOption).flatMap {
+          case Some(user) => Future.successful(Right(user.email))
+          case None => Future.successful(Left("User not found."))
+        }
+      case Some(_) => Future.successful(Left("Refresh token expired."))
+      case None => Future.successful(Left("Invalid refresh token."))
     }
   }
 }

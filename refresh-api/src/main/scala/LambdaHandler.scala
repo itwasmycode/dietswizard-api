@@ -24,49 +24,51 @@ import at.favre.lib.crypto.bcrypt._
 object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
   val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
-  case class Request(email: String, password: String)
-  implicit val requestFormat: Format[Request] = Json.format[Request]
+
+  case class RefreshRequest(refreshToken: String)
+  implicit val refreshRequestFormat: Format[RefreshRequest] = Json.format[RefreshRequest]
+
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    import requestFormat._
+    import refreshRequestFormat._
     val requestBody = input.getBody
-    val request = Json.parse(requestBody).asOpt[Request]
+    val request = Json.parse(requestBody).asOpt[RefreshRequest]
+
     request match {
       case Some(req) =>
-        val refreshToken = req.refreshToken.getOrElse("")
-        if (!RefreshTokenValidator.validateUUID(refreshToken)) {
-          return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid refresh token")
-        }
+        val refreshToken = req.refreshToken
 
         DatabaseConfig.getDbConfig match {
           case Success(dbConfig) =>
             val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
-            Await.result(DatabaseHandler.findUserIdByRefreshToken(refreshToken)(db, ec), Duration.Inf) match {
-              case Right((userId, expireDate)) =>
-                if (expireDate.before(new Date())) {
-                  return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Refresh token expired")
-                }
-
-                Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
-                  case Right(user) =>
-                    val email = user.email
-                    val newToken = TokenHandler.createJwtToken(email, secretKey, issuer, audience)
-                    newToken match {
-                      case Success(token) =>
-                        return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(token)
-                      case Failure(e) =>
-                        return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Error creating new JWT token")
-                    }
-                  case Left(error) =>
-                    return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody(error)
+            val result = Await.result(DatabaseHandler.refreshAccessToken(refreshToken)(db, ec), Duration.Inf)
+            result match {
+              case Right(email) =>
+                val expireDate = Instant.now().plus(1, ChronoUnit.DAYS)
+                TokenHandler.createJwtToken(email, refreshToken, "dietswizard", "dietswizard") match {
+                  case Success(accessToken) =>
+                    val responseBody = Map("accessToken" -> accessToken.toString).asJava
+                    return new APIGatewayProxyResponseEvent()
+                      .withStatusCode(200)
+                      .withBody(responseBody.toString)
+                  case Failure(e) =>
+                    return new APIGatewayProxyResponseEvent()
+                      .withStatusCode(400)
+                      .withBody("Token generation failed.")
                 }
               case Left(error) =>
-                return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody(error)
+                return new APIGatewayProxyResponseEvent()
+                  .withStatusCode(400)
+                  .withBody(error.toString)
             }
           case Failure(e) =>
-            return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("DB Configuration Failed")
+            return new APIGatewayProxyResponseEvent()
+              .withStatusCode(500)
+              .withBody(e.toString)
         }
       case None =>
-        return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Error decoding request")
+        return new APIGatewayProxyResponseEvent()
+          .withStatusCode(400)
+          .withBody("Invalid request body.")
     }
   }
 }
