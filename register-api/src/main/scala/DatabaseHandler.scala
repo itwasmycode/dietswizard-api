@@ -6,7 +6,7 @@ object DatabaseHandler {
 
   val logger = LoggerFactory.getLogger(getClass)
 
-  case class User(user_id: Int, uuid: String, email: String, password: String, ...)
+  case class User(user_id: Int, uuid: String, email: String, password: String)
 
   class Users(tag: Tag) extends Table[User](tag, "users") {
     def user_id = column[Int]("user_id", O.PrimaryKey, O.AutoInc)
@@ -31,5 +31,4 @@ object DatabaseHandler {
       case e => Left(e.getMessage)
     }
   }
-
 }
