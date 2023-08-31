@@ -24,7 +24,7 @@ object DatabaseHandler {
       case None => Left("User not found")
     }
   }
-
+  val users = TableQuery[Users]
   // Create a new user
   def createUser(user: User)(implicit db: Database, ec: ExecutionContext): Future[Either[String, Unit]] = {
     db.run(users += user).map(_ => Right(())).recover {
