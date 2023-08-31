@@ -56,7 +56,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
                     val responseBody = Map("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString).asJava
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(200)
-                      .withBody(responseBody)
+                      .withBody(responseBody.toString)
                   case Failure(e) =>
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(400)
