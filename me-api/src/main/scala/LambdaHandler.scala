@@ -24,14 +24,16 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
     val accessToken = input.getHeaders.get("Authorization").substring(7)
     SecretHandler.retrieveSecret("dietswizard-uuid") match {
           case Success(secret) =>
+            logger.info("t1")
             DatabaseConfig.getDbConfig match {
               case Success(dbConfig) =>
+                logger.info("t2")
                 TokenHandler.verifyAndDecodeJwtToken(accessToken, secret) match {
                   case Success(claimsSet) =>
                     val expirationTime = claimsSet.getExpirationTime
                     logger.info(expirationTime.toString)
                     val currentTime = new Date()
-
+                    logger.info("t3")
                     if (expirationTime.before(currentTime)) {
                       return new APIGatewayProxyResponseEvent()
                         .withStatusCode(401)
@@ -39,11 +41,11 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                     }
 
                     val userId = claimsSet.getStringClaim("userId").toInt
-                    logger.info(userId.toString+"user??")
+                    logger.info("t4")
                     val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
                     Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
                       case Right(user: DatabaseHandler.User) =>
-                        logger.info(user.toString+"user??")
+                        logger.info("t5")
                         val response = Response(user.uuid, user.gender, user.birthday, user.premium, user.status)
                         return new APIGatewayProxyResponseEvent()
                           .withStatusCode(200)
