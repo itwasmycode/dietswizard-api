@@ -43,7 +43,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
         DatabaseConfig.getDbConfig match {
           case Success(dbConfig) =>
             val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
-            SecretHandler.retrieveSecret("uuid") match {
+            SecretHandler.retrieveSecret("dietswizard-uuid") match {
               case Success(secret) =>
                 val result = Await.result(DatabaseHandler.refreshAccessToken(refreshToken)(db, ec), Duration.Inf)
                 result match {
@@ -62,22 +62,22 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
                   case Left(error) =>
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(400)
-                      .withBody("Bi sıkıntı var gibi gülüm he?")
+                      .withBody(error.toString)
                 }
               case Failure(e) =>
                 return new APIGatewayProxyResponseEvent()
                   .withStatusCode(500)
-                  .withBody("Bodyci")
+                  .withBody(e.toString)
             }
           case Failure(e) =>
             return new APIGatewayProxyResponseEvent()
               .withStatusCode(500)
-              .withBody("Olur mu oyle sey")
+              .withBody(e.toString)
         }
       case None =>
         return new APIGatewayProxyResponseEvent()
           .withStatusCode(400)
-          .withBody("Dinime yalan.")
+          .withBody("Invalid body")
         }
     }
 }

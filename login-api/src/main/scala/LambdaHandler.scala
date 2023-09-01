@@ -43,7 +43,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
         }
 
         val refreshToken = UUID.randomUUID().toString
-        SecretHandler.retrieveSecret("uuid") match {
+        SecretHandler.retrieveSecret("dietswizard-uuid") match {
           case Success(secret) =>
             val expireDate = Instant.now ().plus (14, ChronoUnit.DAYS)
 

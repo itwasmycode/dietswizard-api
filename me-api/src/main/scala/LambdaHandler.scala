@@ -21,7 +21,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
     val accessToken = input.getHeaders.get("Authorization").substring(7)
-    SecretHandler.retrieveSecret("uuid") match {
+    SecretHandler.retrieveSecret("dietswizard-uuid") match {
           case Success(secret) =>
             DatabaseConfig.getDbConfig match {
               case Success(dbConfig) =>
