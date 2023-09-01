@@ -36,7 +36,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                         .withBody("Access token expired")
                     }
 
-                    val userId = claimsSet.getStringClaim("userId")
+                    val userId = claimsSet.getStringClaim("userId").toInt
                     val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
                     Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
                       case Right(user: DatabaseHandler.User) =>
