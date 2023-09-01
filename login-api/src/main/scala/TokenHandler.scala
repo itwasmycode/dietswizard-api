@@ -23,7 +23,7 @@ object TokenHandler {
           .audience(audience)
           .issueTime(now)
           .claim("email", email)
-          .claim("userId", user.id.toString))
+          .claim("userId", user.id.toString)
           .expirationTime(new java.util.Date(accessTokenExpiration))
           .build()
       )

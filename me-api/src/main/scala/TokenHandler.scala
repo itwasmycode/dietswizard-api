@@ -12,6 +12,6 @@ object TokenHandler {
       val verifier = new MACVerifier(secretKey.getBytes)
       if (!signedJWT.verify(verifier)) throw new Exception("JWT verification failed")
       signedJWT.getJWTClaimsSet
-    }
+    }K
   }
 }
