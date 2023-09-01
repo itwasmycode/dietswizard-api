@@ -28,9 +28,8 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
               case Success(dbConfig) =>
                 TokenHandler.verifyAndDecodeJwtToken(accessToken, secret) match {
                   case Success(claimsSet) =>
-                    logger.info(claimsSet.toString)
-                    logger.info(claimsSet.getExpirationTime.toString)
                     val expirationTime = claimsSet.getExpirationTime
+                    logger.info(expirationTime.toString)
                     val currentTime = new Date()
 
                     if (expirationTime.before(currentTime)) {
@@ -40,9 +39,11 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                     }
 
                     val userId = claimsSet.getStringClaim("userId").toInt
+                    logger.info(userId.toString+"user??")
                     val db = Database.forURL(dbConfig.url, dbConfig.user, dbConfig.password, driver = "org.postgresql.Driver")
                     Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
                       case Right(user: DatabaseHandler.User) =>
+                        logger.info(user.toString+"user??")
                         val response = Response(user.uuid, user.gender, user.birthday, user.premium, user.status)
                         return new APIGatewayProxyResponseEvent()
                           .withStatusCode(200)
