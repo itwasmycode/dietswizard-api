@@ -11,7 +11,7 @@ import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
 import com.nimbusds.jwt.JWTClaimsSet
 
 object TokenHandler {
-  def createJwtToken(email: String,userId: String, secretKey: String, issuer: String, audience: String): Try[String] = {
+  def createJwtToken(email: String,userId: Int, secretKey: String, issuer: String, audience: String): Try[String] = {
     (for {
       now <- Try(new Date())
       accessTokenExpirationMinutes = 1
