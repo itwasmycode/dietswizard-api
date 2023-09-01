@@ -17,7 +17,13 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
   case class Request(accessToken: String)
   implicit val requestFormat: Format[Request] = Json.format[Request]
 
-  case class Response(uuid: String, gender: Int, birthday: Date, premium: Boolean, status: Int)
+  case class Response(
+                       uuid: String,
+                       gender: Option[Int],
+                       birthday: Option[Date],
+                       premium: Boolean,
+                       status: Int
+                     )
   implicit val responseWrites: Writes[Response] = Json.writes[Response]
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
@@ -46,8 +52,14 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                     Await.result(DatabaseHandler.findUserById(userId)(db, ec), Duration.Inf) match {
                       case Right(user: DatabaseHandler.User) =>
                         logger.info("t5")
-                        val response = Response(user.uuid, user.gender, user.birthday, user.premium, user.status)
-                        return new APIGatewayProxyResponseEvent()
+                        val response = Response(
+                          user.uuid,
+                          user.gender,
+                          user.birthday,
+                          user.premium,
+                          user.status
+                        )
+                       return new APIGatewayProxyResponseEvent()
                           .withStatusCode(200)
                           .withBody(Json.toJson(response).toString())
                       case Left(error) =>
