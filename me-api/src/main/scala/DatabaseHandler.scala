@@ -10,7 +10,7 @@ object DatabaseHandler {
   class Users(tag: Tag) extends Table[User](tag, "users") {
     def user_id = column[Int]("user_id", O.PrimaryKey)
     def email = column[String]("email")
-    def passwordHash = column[String]("password_hash")
+    def passwordHash = column[String]("password")
     def uuid = column[String]("uuid")
     def gender = column[Int]("gender")
     def birthday = column[Date]("birthday")
