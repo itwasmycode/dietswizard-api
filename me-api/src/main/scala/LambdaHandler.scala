@@ -27,6 +27,8 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
               case Success(dbConfig) =>
                 TokenHandler.verifyAndDecodeJwtToken(accessToken, secret) match {
                   case Success(claimsSet) =>
+                    logger.info(claimsSet)
+                    logger.info(claimsSet.getExpirationTime)
                     val expirationTime = claimsSet.getExpirationTime
                     val currentTime = new Date()
 
