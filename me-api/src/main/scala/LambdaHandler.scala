@@ -11,6 +11,7 @@ import slick.jdbc.PostgresProfile.api._
 import java.util.UUID
 
 object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
+  val logger = LoggerFactory.getLogger(getClass)
   implicit val ec = ExecutionContext.global
 
   case class Request(accessToken: String)
