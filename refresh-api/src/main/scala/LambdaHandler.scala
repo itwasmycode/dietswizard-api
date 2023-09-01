@@ -62,22 +62,22 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
                   case Left(error) =>
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(400)
-                      .withBody(error.toString)
+                      .withBody("Bi sıkıntı var gibi gülüm he?")
                 }
               case Failure(e) =>
                 return new APIGatewayProxyResponseEvent()
                   .withStatusCode(500)
-                  .withBody(e.toString)
+                  .withBody("Bodyci")
             }
           case Failure(e) =>
             return new APIGatewayProxyResponseEvent()
               .withStatusCode(500)
-              .withBody(e.toString)
+              .withBody("Olur mu oyle sey")
         }
       case None =>
         return new APIGatewayProxyResponseEvent()
           .withStatusCode(400)
-          .withBody("Invalid request body.")
+          .withBody("Dinime yalan.")
         }
     }
 }
