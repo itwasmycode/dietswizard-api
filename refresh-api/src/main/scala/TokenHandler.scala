@@ -11,7 +11,7 @@ import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
 import com.nimbusds.jwt.JWTClaimsSet
 
 object TokenHandler {
-  def createJwtToken(email: String, secretKey: String, issuer: String, audience: String): Try[String] = {
+  def createJwtToken(email: String,userId: Int, secretKey: String, issuer: String, audience: String): Try[String] = {
     (for {
       now <- Try(new Date())
       accessTokenExpirationMinutes = 1
@@ -23,6 +23,7 @@ object TokenHandler {
           .audience(audience)
           .issueTime(now)
           .claim("email", email)
+          .claim("userId", userId.toString)
           .expirationTime(new java.util.Date(accessTokenExpiration))
           .build()
       )
