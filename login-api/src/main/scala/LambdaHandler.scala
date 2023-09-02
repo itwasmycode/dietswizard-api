@@ -55,7 +55,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
               case Right (user) =>
                 TokenHandler.createJwtToken (email,user.id, secret, "dietswizard", "dietswizard") match {
                 case Success (accessToken) =>
-                    val responseBody = Map ("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString).asJava
+                    val responseBody = Map ("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString)
                     return new APIGatewayProxyResponseEvent ()
                     .withStatusCode (200)
                       .withHeaders(Map("Content-Type" -> "application/json").asJava)
