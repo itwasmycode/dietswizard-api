@@ -59,7 +59,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
                     return new APIGatewayProxyResponseEvent ()
                     .withStatusCode (200)
                       .withHeaders(Map("Content-Type" -> "application/json").asJava)
-                    .withBody (responseBody.toString)
+                    .withBody (Json.toJson(response).toString())
                 case Failure (e) =>
                     return new APIGatewayProxyResponseEvent ()
                     .withStatusCode (400)
