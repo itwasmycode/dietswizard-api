@@ -32,7 +32,7 @@ object DatabaseHandler {
     def * = (userTokenId, userId, refreshToken, expireDate) <> (UserToken.tupled, UserToken.unapply)
   }
 
-  def refreshAccessToken(refreshToken: String)(implicit db: Database, ec: ExecutionContext): Future[Either[User, String]] = {
+  def refreshAccessToken(refreshToken: String)(implicit db: Database, ec: ExecutionContext): Future[Either[String, User]] = {
     val query = userTokens.filter(_.refreshToken === refreshToken)
     db.run(query.result.headOption).flatMap {
       case Some(userToken) if userToken.expireDate.isAfter(Instant.now) =>
