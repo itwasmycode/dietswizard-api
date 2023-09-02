@@ -1,7 +1,3 @@
-import com.amazonaws.services.lambda.runtime.{Context}
-import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
-
-import scala.collection.JavaConverters._
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 
@@ -21,8 +17,6 @@ import at.favre.lib.crypto.bcrypt._
 
 import java.time.temporal.ChronoUnit
 import java.time.Instant
-
-
 
 
 object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent] {
