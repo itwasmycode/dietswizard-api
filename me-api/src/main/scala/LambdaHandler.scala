@@ -9,6 +9,7 @@ import play.api.libs.json._
 import scala.util.{Try, Success, Failure}
 import slick.jdbc.PostgresProfile.api._
 import java.util.UUID
+import scala.collection.JavaConverters._
 
 object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
   val logger = LoggerFactory.getLogger(getClass)
@@ -43,6 +44,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                     if (expirationTime.before(currentTime)) {
                       return new APIGatewayProxyResponseEvent()
                         .withStatusCode(401)
+                        .withHeaders(Map("Content-Type" -> "application/json").asJava)
                         .withBody("Access token expired")
                     }
 
@@ -61,25 +63,30 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGate
                         )
                        return new APIGatewayProxyResponseEvent()
                           .withStatusCode(200)
-                          .withBody(Json.toJson(response).toString())
+                         .withHeaders(Map("Content-Type" -> "application/json").asJava)
+                         .withBody(Json.toJson(response).toString())
                       case Left(error) =>
                         return new APIGatewayProxyResponseEvent()
                           .withStatusCode(500)
+                          .withHeaders(Map("Content-Type" -> "application/json").asJava)
                           .withBody(error.toString)
                     }
                   case Failure(e) =>
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(400)
+                      .withHeaders(Map("Content-Type" -> "application/json").asJava)
                       .withBody("Invalid access token")
                 }
               case Failure(e) =>
                 return new APIGatewayProxyResponseEvent()
                   .withStatusCode(500)
+                  .withHeaders(Map("Content-Type" -> "application/json").asJava)
                   .withBody("Failed to retrieve secret key")
             }
           case Failure(e) =>
             return new APIGatewayProxyResponseEvent()
               .withStatusCode(500)
+              .withHeaders(Map("Content-Type" -> "application/json").asJava)
               .withBody(e.toString)
         }
     }

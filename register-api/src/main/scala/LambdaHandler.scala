@@ -38,6 +38,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
         if (!InformationValidator.validateEmail(email) || !InformationValidator.validatePassword(password)) {
           return new APIGatewayProxyResponseEvent()
             .withStatusCode(400)
+            .withHeaders(Map("Content-Type" -> "application/json").asJava)
             .withBody("Invalid input")
         }
 
@@ -48,6 +49,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
               case Right(user) =>
                 return new APIGatewayProxyResponseEvent()
                   .withStatusCode(400)
+                  .withHeaders(Map("Content-Type" -> "application/json").asJava)
                   .withBody("User already exists")
               case Left(_) =>
                 val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray)
@@ -56,6 +58,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
                   case Right(_) =>
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(200)
+                      .withHeaders(Map("Content-Type" -> "application/json").asJava)
                       .withBody("User created successfully.")
 
                   case Left(error) =>
@@ -64,6 +67,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
 
                     return new APIGatewayProxyResponseEvent()
                       .withStatusCode(500)
+                      .withHeaders(Map("Content-Type" -> "application/json").asJava)
                       .withBody(error.toString)
                 }
             }
@@ -71,11 +75,13 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
 
             return new APIGatewayProxyResponseEvent()
               .withStatusCode(500)
+              .withHeaders(Map("Content-Type" -> "application/json").asJava)
               .withBody("DB Configuration Failed")
         }
       case None =>
         return new APIGatewayProxyResponseEvent()
           .withStatusCode(400)
+          .withHeaders(Map("Content-Type" -> "application/json").asJava)
           .withBody("Error decoding request")
     }
   }

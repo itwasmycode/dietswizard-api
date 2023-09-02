@@ -58,25 +58,30 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
                     val responseBody = Map ("accessToken" -> accessToken.toString, "refreshToken" -> refreshToken.toString).asJava
                     return new APIGatewayProxyResponseEvent ()
                     .withStatusCode (200)
+                      .withHeaders(Map("Content-Type" -> "application/json").asJava)
                     .withBody (responseBody.toString)
                 case Failure (e) =>
                     return new APIGatewayProxyResponseEvent ()
                     .withStatusCode (400)
+                      .withHeaders(Map("Content-Type" -> "application/json").asJava)
                     .withBody ("Token generation failed.")
                   }
               case Left (error) =>
                 return new APIGatewayProxyResponseEvent ()
                 .withStatusCode (400)
+                  .withHeaders(Map("Content-Type" -> "application/json").asJava)
                 .withBody (error.toString)
                 }
             case Failure (e) =>
               return new APIGatewayProxyResponseEvent ()
               .withStatusCode (500)
+                .withHeaders(Map("Content-Type" -> "application/json").asJava)
               .withBody (e.toString)
             }
           case Failure(e) =>
             return new APIGatewayProxyResponseEvent()
               .withStatusCode(500)
+              .withHeaders(Map("Content-Type" -> "application/json").asJava)
               .withBody(e.toString)
         }
         }
