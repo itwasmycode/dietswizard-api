@@ -8,6 +8,7 @@ import scala.concurrent.{ExecutionContext, Future,Await}
 import play.api.libs.json._
 
 
+
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.util.{Try, Success, Failure}
@@ -41,8 +42,8 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
               case Success(secret) =>
                 val result = Await.result(DatabaseHandler.refreshAccessToken(refreshToken)(db, ec), Duration.Inf)
                 result match {
-                  case Right(email) =>
-                    TokenHandler.createJwtToken(email, secret, "dietswizard", "dietswizard") match {
+                  case Right(user) =>
+                    TokenHandler.createJwtToken(user.email,user.id, secret, "dietswizard", "dietswizard") match {
                       case Success(accessToken) =>
                         val responseBody = Map("accessToken" -> accessToken.toString)
                         return new APIGatewayProxyResponseEvent()
