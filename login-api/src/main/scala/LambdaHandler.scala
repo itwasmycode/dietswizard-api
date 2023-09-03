@@ -41,7 +41,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
             .withStatusCode(400)
             .withBody("Invalid input")
         }
-
+        // au-1080
         val refreshToken = UUID.randomUUID().toString
         SecretHandler.retrieveSecret("dietswizard-uuid") match {
           case Success(secret) =>
@@ -60,6 +60,7 @@ object LambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent,APIGatew
                     .withStatusCode (200)
                       .withHeaders(Map("Content-Type" -> "application/json").asJava)
                     .withBody (Json.toJson(responseBody).toString())
+
                 case Failure (e) =>
                     return new APIGatewayProxyResponseEvent ()
                     .withStatusCode (400)

@@ -51,6 +51,4 @@ object DatabaseHandler {
       case _ => Future.successful(Left("Invalid credentials"))
     }
   }
-
-
 }
